@@ -418,14 +418,15 @@ function updateRunningTotals() {
    CSV EXPORT
    ════════════════════════════════════ */
 function exportCSV() {
-  // Source: ERA_EXHIBITION_Sales_Input_2.xlsx
+  // Source: ERA_EXHIBITION_Sales_Input_2.xlsx (7 hari lengkap)
   const staticRows = [
-    {date:'2026-04-27',brand:'iBox',walkin:0,trx:55,conv:0,revenue:387835000,vmdScore:90,notes:'Device:36 VAS:19'},
-    {date:'2026-04-28',brand:'iBox',walkin:0,trx:51,conv:0,revenue:338503000,vmdScore:88,notes:'Device:24 VAS:27'},
-    {date:'2026-04-29',brand:'iBox',walkin:0,trx:25,conv:0,revenue:153176200,vmdScore:91,notes:'Device:10 VAS:15'},
-    {date:'2026-04-30',brand:'iBox',walkin:0,trx:39,conv:0,revenue:313995000,vmdScore:82,notes:'Device:13 VAS:26'},
-    {date:'2026-05-01',brand:'iBox',walkin:0,trx:72,conv:0,revenue:357231000,vmdScore:89,notes:'Device:19 VAS:53'},
-    {date:'2026-05-02',brand:'iBox',walkin:0,trx:86,conv:0,revenue:505702950,vmdScore:85,notes:'Device:43 VAS:43'},
+    {date:'2026-04-27',brand:'iBox',walkin:0,trx:55, conv:0,revenue:387835000, vmdScore:90,notes:'Device:36 VAS:19'},
+    {date:'2026-04-28',brand:'iBox',walkin:0,trx:51, conv:0,revenue:338503000, vmdScore:88,notes:'Device:24 VAS:27'},
+    {date:'2026-04-29',brand:'iBox',walkin:0,trx:25, conv:0,revenue:153176200, vmdScore:91,notes:'Device:10 VAS:15'},
+    {date:'2026-04-30',brand:'iBox',walkin:0,trx:39, conv:0,revenue:313995000, vmdScore:82,notes:'Device:13 VAS:26'},
+    {date:'2026-05-01',brand:'iBox',walkin:0,trx:72, conv:0,revenue:357231000, vmdScore:89,notes:'Device:19 VAS:53'},
+    {date:'2026-05-02',brand:'iBox',walkin:0,trx:86, conv:0,revenue:505702950, vmdScore:85,notes:'Device:43 VAS:43'},
+    {date:'2026-05-03',brand:'iBox',walkin:0,trx:106,conv:0,revenue:865394650, vmdScore:88,notes:'Device:41 VAS:65'},
   ];
   const saved   = Object.values(loadDailyData()).sort((a,b)=>a.date>b.date?1:-1);
   const savedKeys = new Set(saved.map(r=>r.date+'_'+r.brand));
@@ -548,16 +549,17 @@ function resetBudgetActuals() {
 /* ════════════════════════════════════
    ALERT SYSTEM
    ════════════════════════════════════ */
-// Source: ERA_EXHIBITION_Sales_Input_2.xlsx — INPUT DAILY sheet
+// Source: ERA_EXHIBITION_Sales_Input_2.xlsx — INPUT DAILY sheet (7 hari lengkap)
 // Revenue = Grand Total Value per hari · trx = Grand Total Qty (units)
 // Walk-in tidak tersedia di Excel — perlu input manual
 const STATIC_DAILY = [
-  {date:'2026-04-27',walkin:0,trx:55,conv:0,revenue:387835000,vmdScore:90},
-  {date:'2026-04-28',walkin:0,trx:51,conv:0,revenue:338503000,vmdScore:88},
-  {date:'2026-04-29',walkin:0,trx:25,conv:0,revenue:153176200,vmdScore:91},
-  {date:'2026-04-30',walkin:0,trx:39,conv:0,revenue:313995000,vmdScore:82},
-  {date:'2026-05-01',walkin:0,trx:72,conv:0,revenue:357231000,vmdScore:89},
-  {date:'2026-05-02',walkin:0,trx:86,conv:0,revenue:505702950,vmdScore:85},
+  {date:'2026-04-27',walkin:0,trx:55, conv:0,revenue:387835000, vmdScore:90},
+  {date:'2026-04-28',walkin:0,trx:51, conv:0,revenue:338503000, vmdScore:88},
+  {date:'2026-04-29',walkin:0,trx:25, conv:0,revenue:153176200, vmdScore:91},
+  {date:'2026-04-30',walkin:0,trx:39, conv:0,revenue:313995000, vmdScore:82},
+  {date:'2026-05-01',walkin:0,trx:72, conv:0,revenue:357231000, vmdScore:89},
+  {date:'2026-05-02',walkin:0,trx:86, conv:0,revenue:505702950, vmdScore:85},
+  {date:'2026-05-03',walkin:0,trx:106,conv:0,revenue:865394650, vmdScore:88},
 ];
 
 // Target event harian = Rp 6.156.700.000 / 7 hari
@@ -799,106 +801,108 @@ const AI_RESPONSES = {
   descriptive: {
     title: '📊 Descriptive Analysis',
     body: `
-      <h4>Ringkasan Performa 6 Hari (27 Apr – 2 Mei 2026)</h4>
+      <h4>Ringkasan Performa 7 Hari Final (27 Apr – 3 Mei 2026)</h4>
       <ul>
-        <li><strong>Total Units Terjual:</strong> 328 unit — Device 145 (44%) + VAS 183 (56%)</li>
-        <li><strong>Total Revenue:</strong> Rp 2,056,443,150 — dari target Rp 6,156,700,000</li>
-        <li><strong>Achievement:</strong> <strong>33,4%</strong> dari total target event</li>
-        <li><strong>Hari ke-7 (3/5):</strong> Belum diinput — revenue masih bisa bertambah</li>
-        <li><strong>Avg VMD Score:</strong> 87/100 — konsisten di atas standar minimum 80</li>
+        <li><strong>Total Units Terjual:</strong> 434 unit — Device 186 (42,9%) + VAS 248 (57,1%)</li>
+        <li><strong>Total Revenue:</strong> Rp 2.921.837.800 — dari target Rp 6.156.700.000</li>
+        <li><strong>Achievement:</strong> <strong>47,5%</strong> dari total target event (final)</li>
+        <li><strong>Avg Revenue/Unit:</strong> Rp 6.731.195 — naik dari rata-rata 6 hari (Rp 6.269.033)</li>
+        <li><strong>Avg VMD Score:</strong> 88/100 — konsisten di atas standar minimum 80</li>
       </ul>
       <h4>Tren Harian Revenue (Rp juta)</h4>
       <ul>
-        <li>27/4: Rp 387,8 jt | 28/4: Rp 338,5 jt | 29/4: Rp 153,2 jt</li>
-        <li>30/4: Rp 314,0 jt | 1/5: Rp 357,2 jt | 2/5: Rp 505,7 jt ← peak</li>
-        <li>Rabu (29/4) terendah — dip mid-week terlihat jelas</li>
-        <li>Sabtu (2/5) tertinggi Rp 505,7 jt = 24,6% dari total revenue 6 hari</li>
+        <li>27/4: Rp 387,8 jt | 28/4: Rp 338,5 jt | 29/4: Rp 153,2 jt ← terendah</li>
+        <li>30/4: Rp 314,0 jt | 1/5: Rp 357,2 jt | 2/5: Rp 505,7 jt</li>
+        <li><strong>3/5: Rp 865,4 jt ← TERTINGGI</strong> — Minggu melebihi Sabtu 71%!</li>
+        <li>Tren sangat positif di akhir event: Day 7 = 29,6% dari total 7-hari revenue</li>
       </ul>
-      <h4>Breakdown Produk</h4>
+      <h4>Breakdown Produk (7 Hari)</h4>
       <ul>
-        <li>iPhone: 95 unit / Rp 1,653 M (80,4% revenue share) — produk utama</li>
-        <li>iPad: 45 unit / Rp 196 jt (9,5%) — potensi masih besar</li>
-        <li>Macbook: 5 unit / Rp 80,6 jt (3,9%)</li>
-        <li>Accessories: 165 unit / Rp 86,9 jt (4,2%) — highest qty</li>
-        <li>Apple Watch: 4 unit · Airpods: 1 unit · SIM (Indosat+XL): 9 unit</li>
+        <li><strong>iPhone:</strong> 131 unit / Rp 2.438.619.000 (83,5% revenue share)</li>
+        <li><strong>iPad:</strong> 49 unit / Rp 226.851.000 (7,8%)</li>
+        <li><strong>Macbook:</strong> 6 unit / Rp 92.094.000 (3,2%)</li>
+        <li><strong>Accessories:</strong> 225 unit / Rp 113.673.800 (3,9%) — highest qty</li>
+        <li><strong>Apple Watch:</strong> 5 unit · <strong>Airpods:</strong> 4 unit · <strong>Repair Contract:</strong> 4 unit</li>
+        <li><strong>Indosat+XL:</strong> 10 unit / Rp 9.850.000</li>
       </ul>`
   },
   diagnostic: {
     title: '🔍 Diagnostic Analysis',
     body: `
-      <h4>Mengapa Achievement Baru 33,4% dari Target?</h4>
+      <h4>Mengapa Achievement 47,5% dari Target?</h4>
       <ul>
-        <li><strong>Target sangat ambisius:</strong> Rp 6,156 M untuk 7 hari = Rp 879 jt/hari — 2,3x di atas avg aktual</li>
-        <li><strong>Rabu dip ekstrem:</strong> 29/4 hanya Rp 153 jt (17,4% dari daily target) — faktor mid-week + kurang aktivasi</li>
-        <li><strong>Weekend kuat:</strong> Sabtu Rp 505,7 jt — satu-satunya hari yang mendekati 57% dari daily target</li>
-        <li><strong>iPhone dominan 80,4%:</strong> Konsentrasi risiko tinggi — jika iPhone slow, total revenue ikut turun</li>
+        <li><strong>Target sangat ambisius:</strong> Rp 6,156 M untuk 7 hari = Rp 879 jt/hari — aktual avg Rp 417 jt/hari (47,5% dari target harian)</li>
+        <li><strong>Rabu dip ekstrem:</strong> 29/4 hanya Rp 153 jt (17,4% dari daily target) — mid-week + kurang aktivasi</li>
+        <li><strong>Sunday spike luar biasa:</strong> 3/5 = Rp 865 jt (98,4% daily target!) — gap mostly dari weekday</li>
+        <li><strong>iPhone dominan 83,5%:</strong> Konsentrasi risiko tinggi — iPhone slow = total slow</li>
       </ul>
       <h4>Root Cause Gap Achievement</h4>
       <ul>
-        <li><strong>Walk-in data tidak tersedia:</strong> Conversion rate tidak bisa dihitung → sulit diagnosa efektivitas tim sales</li>
-        <li><strong>VAS contribution rendah:</strong> Rp 126 jt (6,1%) dari total — upsell kurang optimal</li>
-        <li><strong>iPad under-perform:</strong> 45 unit padahal Macbook hanya 5 — potensi iPad lebih besar jika ada dedicated display</li>
-        <li><strong>Hari ke-7 (3/5) kosong:</strong> Bisa jadi data belum diinput atau event belum selesai</li>
+        <li><strong>Weekday vs Weekend gap besar:</strong> Avg weekday Rp 287 jt vs Weekend Rp 625 jt — rasio 1:2,2</li>
+        <li><strong>Walk-in data tidak tersedia:</strong> Conv rate tidak bisa dihitung → sulit diagnosa efektivitas tim</li>
+        <li><strong>VAS contribution rendah:</strong> Rp 164 jt (5,6%) dari total — upsell belum optimal</li>
+        <li><strong>Target mungkin benchmark ROI, bukan forecast realistis:</strong> Perlu kalibrasi ulang untuk next event</li>
       </ul>`
   },
   predictive: {
     title: '📈 Predictive Analysis',
     body: `
-      <h4>Proyeksi Hari ke-7 (3 Mei 2026)</h4>
+      <h4>Insight dari Pola 7 Hari Final</h4>
       <ul>
-        <li>Berdasarkan tren Sabtu (505,7 jt), Minggu biasanya 80–90% dari Sabtu</li>
-        <li><strong>Proyeksi revenue 3/5:</strong> Rp 380–450 jt</li>
-        <li><strong>Proyeksi total 7 hari:</strong> Rp 2,43–2,51 M (achievement ~39–41%)</li>
+        <li><strong>Sunday > Saturday:</strong> Hari ke-7 Rp 865 jt vs Hari ke-6 Rp 505 jt — Sunday closing rush effect</li>
+        <li><strong>Week-2 momentum:</strong> Jika ada perpanjangan 3 hari, proyeksi +Rp 600–900 jt berdasarkan tren akhir</li>
+        <li><strong>iPhone peak:</strong> Day 7 iPhone 36 unit (vs avg 15,8/hari) — promosi akhir event sangat efektif</li>
       </ul>
       <h4>Forecast Next Exhibition (profil serupa)</h4>
       <ul>
-        <li><strong>Projected Revenue:</strong> Rp 2,4–2,8 M jika target diturunkan ke Rp 300–400 jt/hari</li>
-        <li><strong>Kunci peningkatan:</strong> Aktivasi KOL H-5, dedicated iPad corner, +1 kasir weekend</li>
-        <li><strong>Target realistis:</strong> Rp 3,0–3,5 M (vs target ambisius Rp 6,15 M sekarang)</li>
-        <li><strong>Timeline optimal:</strong> Juni–Juli 2026 (pre-back-to-school) atau Sept–Okt (pre year-end)</li>
+        <li><strong>Target realistis:</strong> Rp 3,0–3,5 M (vs Rp 6,15 M) berdasarkan data aktual BJX 2026</li>
+        <li><strong>Skenario optimis:</strong> +1 kasir weekend + KOL H-5 + iPad corner → est. Rp 3,5–4,0 M</li>
+        <li><strong>Timeline optimal:</strong> Juli 2026 (back-to-school) atau Sept–Okt (year-end) — bukan Mei (Lebaran season)</li>
+        <li><strong>Venue repeat:</strong> BJX traffic tinggi terbukti — direkomendasikan diulang Q3 2026</li>
       </ul>
-      <h4>Estimasi Berdasarkan ASP Reference</h4>
+      <h4>ASP Analysis</h4>
       <ul>
-        <li>iPhone ASP: Rp 17,4 jt/unit — dengan 95 unit sudah Rp 1,65 M (sesuai ASP reference)</li>
-        <li>iPad ASP: Rp 4,35 jt/unit — potensi +20 unit = +Rp 87 jt extra dengan dedicated demo</li>
+        <li>iPhone ASP aktual: Rp 18.615.412 (sesuai benchmark) — pricing optimal</li>
+        <li>iPad ASP: Rp 4.629.612 — 49 unit, potensi +30 unit dengan dedicated demo area</li>
+        <li>Accessories ASP: Rp 505.217 — 225 unit, upsell masih bisa ditingkatkan ke ratio 2:1 per device</li>
       </ul>`
   },
   prescriptive: {
     title: '💡 Prescriptive Recommendations',
     body: `
-      <h4>Prioritas Aksi Segera (sisa event + next)</h4>
+      <h4>Aksi Pasca Event (H+3)</h4>
       <ul>
-        <li><strong>[URGENT] Input data hari ke-7:</strong> Pastikan data 3 Mei diinput untuk laporan final</li>
-        <li><strong>[HIGH] Revisi target next event:</strong> Rp 6,15 M terlalu ambisius → realistis Rp 3–3,5 M berdasarkan data aktual</li>
-        <li><strong>[HIGH] Isi Cost Actual budget:</strong> Budget tracker masih kosong — input aktual untuk ROI yang akurat</li>
-        <li><strong>[HIGH] Tambah tracking walk-in:</strong> Tanpa data walk-in, conv rate tidak bisa dihitung — pasang counter atau tally manual</li>
+        <li><strong>[URGENT] Submit Final Report ke Management:</strong> Achievement 47,5% perlu konteks — jelaskan target Rp 6,15 M sangat ambisius, aktual Rp 2,92 M dengan ROI +2.084% vs budget</li>
+        <li><strong>[HIGH] Isi Cost Actual di Budget Tracker:</strong> ROI sesungguhnya baru bisa dihitung setelah aktual diisi</li>
+        <li><strong>[HIGH] Revisi target next event:</strong> Benchmark realistis Rp 3,0–3,5 M atau naikkan hari event dari 7 ke 10 hari</li>
+        <li><strong>[MEDIUM] Dokumentasi Sunday closing strategy:</strong> Hari ke-7 Rp 865 jt — replikasi ke next event</li>
       </ul>
       <h4>Untuk Next Exhibition</h4>
       <ul>
-        <li>Dedicated iPad demo area → target +20 unit = +Rp 87 jt vs sekarang</li>
-        <li>Aktivasi KOL H-5 bukan H-1 untuk menutup gap hari 1-2</li>
-        <li>Mid-week promo (flash sale Rabu) untuk atasi Kamis dip</li>
-        <li>Input walk-in data harian → analisis lebih mendalam di dashboard</li>
+        <li>Dedicated iPad demo area → target +30 unit = +Rp 139 jt vs aktual</li>
+        <li>Aktivasi KOL H-5, bukan H-1 — tutup gap hari 1-2 yang low traffic</li>
+        <li>Mid-week promo (Rabu flash sale) untuk atasi dip hari ke-3</li>
+        <li>Pasang manual tally counter walk-in → data conv rate lebih akurat</li>
       </ul>`
   },
   sales: {
     title: '💰 Sales Analysis',
     body: `
-      <h4>Sales per Kategori — Data Aktual Excel</h4>
+      <h4>Sales per Kategori — Data Final 7 Hari</h4>
       <ul>
-        <li><strong>iPhone:</strong> 95 unit / Rp 1,653,405,000 (80,4% revenue) — ASP Rp 17,4 jt/unit ✓</li>
-        <li><strong>iPad:</strong> 45 unit / Rp 196,055,000 (9,5%) — ASP Rp 4,35 jt/unit ✓</li>
-        <li><strong>Macbook:</strong> 5 unit / Rp 80,595,000 (3,9%) — ASP Rp 16,1 jt/unit ✓</li>
-        <li><strong>Accessories:</strong> 165 unit / Rp 86,887,150 (4,2%) — ASP Rp 527rb/unit</li>
-        <li><strong>Apple Watch:</strong> 4 unit / Rp 20,546,000 · <strong>Airpods:</strong> 1 unit / Rp 4,099,000</li>
-        <li><strong>SIM (Indosat+XL):</strong> 9 unit / Rp 9,000,000</li>
+        <li><strong>iPhone:</strong> 131 unit / Rp 2.438.619.000 (83,5% revenue) — ASP Rp 18.615.412/unit</li>
+        <li><strong>iPad:</strong> 49 unit / Rp 226.851.000 (7,8%) — ASP Rp 4.629.612/unit</li>
+        <li><strong>Macbook:</strong> 6 unit / Rp 92.094.000 (3,2%) — ASP Rp 15.349.000/unit</li>
+        <li><strong>Accessories:</strong> 225 unit / Rp 113.673.800 (3,9%) — ASP Rp 505.217/unit</li>
+        <li><strong>Apple Watch:</strong> 5 unit / Rp 24.795.000 · <strong>Airpods:</strong> 4 unit / Rp 10.099.000</li>
+        <li><strong>Repair Contract:</strong> 4 unit / Rp 5.856.000 · <strong>Indosat+XL:</strong> 10 unit / Rp 9.850.000</li>
       </ul>
       <h4>Metrik Efisiensi Sales</h4>
       <ul>
-        <li>Avg per unit: <strong>Rp 6.269.033/unit</strong> (total revenue / 328 units)</li>
-        <li>Revenue per sqm: <strong>Rp 68,5 jt/sqm</strong> (booth 30 sqm × 6 hari)</li>
-        <li>Device vs VAS mix: 80% vs 20% revenue — VAS masih bisa ditingkatkan</li>
-        <li>Market Share estimate: iPhone 80,4% · iPad 9,5% · Macbook 3,9% (sesuai target ASP)</li>
+        <li>Avg per unit: <strong>Rp 6.731.195/unit</strong> (naik dari 6 hari: Rp 6.269.033)</li>
+        <li>Revenue per sqm: <strong>Rp 97,4 jt/sqm</strong> (booth 30 sqm × 7 hari) — sangat efisien</li>
+        <li>Device vs VAS mix: 94,4% vs 5,6% revenue — VAS perlu ditingkatkan</li>
+        <li>Best day: Minggu 3/5 = 106 unit, Rp 865 jt (29,6% dari total 7-hari revenue)</li>
       </ul>`
   },
   layanan: {
@@ -958,25 +962,27 @@ const AI_RESPONSES = {
   financial: {
     title: '📑 Financial Analysis',
     body: `
-      <h4>Revenue vs Target — Data Aktual</h4>
+      <h4>Revenue vs Target — Final 7 Hari</h4>
       <ul>
-        <li>Total Revenue 6 hari: <strong>Rp 2,056,443,150</strong></li>
-        <li>Target Event: <strong>Rp 6,156,700,000</strong></li>
-        <li>Achievement: <strong>33,4%</strong> dari target total</li>
-        <li>Estimasi total 7 hari: ~Rp 2,43–2,51 M (dengan input hari ke-7)</li>
+        <li>Total Revenue 7 hari: <strong>Rp 2.921.837.800</strong></li>
+        <li>Target Event: <strong>Rp 6.156.700.000</strong></li>
+        <li>Achievement: <strong>47,5%</strong> dari target total (final)</li>
+        <li>Gap ke target: <strong>Rp 3.234.862.200</strong> — 52,5% belum tercapai</li>
+        <li>Day 7 berkontribusi <strong>Rp 865.394.650</strong> (29,6% total) — terkuat sepanjang event</li>
       </ul>
-      <h4>Budget Plan (Aktual Belum Diisi)</h4>
+      <h4>Budget Plan (Aktual Perlu Diisi)</h4>
       <ul>
         <li>Konstruksi Booth (Plan): Rp 85.000.000</li>
         <li>Sewa Space + Deposit (Plan): Rp 34.160.000</li>
         <li>Media & Promosi (Plan): Rp 8.135.000 (KOL Rp 2,5 jt + OOH Rp 5,635 jt)</li>
         <li>SDM / Personil (Plan): Rp 6.500.000</li>
-        <li><strong>Total Plan: Rp 133.795.000</strong> · Aktual: <em>Belum diisi</em></li>
+        <li><strong>Total Plan: Rp 133.795.000</strong> · Aktual: <em>Segera isi di Budget tab</em></li>
       </ul>
-      <h4>ROI Proyeksi (vs Plan)</h4>
+      <h4>ROI vs Budget Plan</h4>
       <ul>
-        <li>Revenue Rp 2,056 M / Cost Plan Rp 133,8 jt → ROI <strong>+1.437%</strong></li>
-        <li>Gross Profit (vs plan): Rp 2,056 M − Rp 133,8 jt = <strong>Rp 1,922 M</strong></li>
+        <li>Revenue Rp 2,922 M / Cost Plan Rp 133,8 jt → ROI <strong>+2.084%</strong></li>
+        <li>Gross Profit (vs plan): Rp 2,922 M − Rp 133,8 jt = <strong>Rp 2,788 M</strong></li>
+        <li>Cost per unit: Rp 133.795.000 / 434 unit = <strong>Rp 308.290/unit</strong></li>
         <li>⚠️ Segera isi Cost Actual di Budget Tracker untuk ROI yang akurat</li>
       </ul>`
   },
@@ -1001,40 +1007,45 @@ const ERA_SYSTEM_PROMPT = [
   'Berikan analisis tajam, terstruktur, dan actionable dalam Bahasa Indonesia.',
   '',
   '=== DATA EVENT ===',
-  'Event: iBox Roadshow — Bintaro Jaya Xchange, 27 Apr – 3 Mei 2026',
+  'Event: iBox Roadshow — Bintaro Jaya Xchange, 27 Apr – 3 Mei 2026 (7 hari selesai)',
   'Event Manager: Ghesang Pratano | Region 5 · Erajaya Digital',
   '',
-  '=== PERFORMA 6 HARI (DATA AKTUAL EXCEL) ===',
-  'Total Units: 328 | Revenue: Rp 2.056.443.150 | Target: Rp 6.156.700.000 | Achievement: 33,4%',
-  'Avg Revenue/Unit: Rp 6.269.033',
+  '=== PERFORMA 7 HARI FINAL (DATA AKTUAL EXCEL) ===',
+  'Total Units: 434 | Revenue: Rp 2.921.837.800 | Target: Rp 6.156.700.000 | Achievement: 47,5%',
+  'Avg Revenue/Unit: Rp 6.731.195 | Device: 186 unit | VAS: 248 unit',
   '',
-  'Tren Harian:',
-  '- Sen 27/4: 55 trx | Rp 387.835.000 | VMD 90',
-  '- Sel 28/4: 51 trx | Rp 338.503.000 | VMD 88',
-  '- Rab 29/4: 25 trx | Rp 153.176.200 | VMD 91 (TERENDAH)',
-  '- Kam 30/4: 39 trx | Rp 313.995.000 | VMD 82',
-  '- Jum  1/5: 72 trx | Rp 357.231.000 | VMD 89',
-  '- Sab  2/5: 86 trx | Rp 505.702.950 | VMD 85 (TERTINGGI)',
-  '- Min  3/5: Belum diinput',
+  'Tren Harian (trx | revenue | VMD):',
+  '- Sen 27/4: 55 trx | Rp  387.835.000 | VMD 90',
+  '- Sel 28/4: 51 trx | Rp  338.503.000 | VMD 88',
+  '- Rab 29/4: 25 trx | Rp  153.176.200 | VMD 91 (TERENDAH trx)',
+  '- Kam 30/4: 39 trx | Rp  313.995.000 | VMD 82',
+  '- Jum  1/5: 72 trx | Rp  357.231.000 | VMD 89',
+  '- Sab  2/5: 86 trx | Rp  505.702.950 | VMD 85',
+  '- Min  3/5:106 trx | Rp  865.394.650 | VMD 88 (TERTINGGI — Sunday peak)',
   '',
-  'Breakdown Produk:',
-  '- iPhone: 95 unit | Rp 1.653.405.000 (80,4% revenue share)',
-  '- iPad: 45 unit | Rp 196.055.000 (9,5%)',
-  '- Macbook: 5 unit | Rp 80.595.000 (3,9%)',
-  '- Accessories: 165 unit | Rp 86.887.150 (4,2%)',
-  '- Apple Watch: 4 unit | Rp 20.546.000',
-  '- Airpods: 1 unit | Rp 4.099.000',
-  '- SIM Indosat+XL: 9 unit | Rp 9.000.000',
+  'Breakdown Produk (7 hari):',
+  '- iPhone:       131 unit | Rp 2.438.619.000 (83,5% revenue share) ← dominan',
+  '- iPad:          49 unit | Rp   226.851.000 ( 7,8%)',
+  '- Macbook:        6 unit | Rp    92.094.000 ( 3,2%)',
+  '- Accessories:  225 unit | Rp   113.673.800 ( 3,9%) ← tertinggi qty',
+  '- Apple Watch:    5 unit | Rp    24.795.000 ( 0,8%)',
+  '- Airpods:        4 unit | Rp    10.099.000 ( 0,3%)',
+  '- Repair Contract:4 unit | Rp     5.856.000 ( 0,2%)',
+  '- Indosat+XL:    10 unit | Rp     9.850.000 ( 0,3%)',
+  '- Device Total: 186 unit | Rp 2.757.564.000 (94,4%)',
+  '- VAS Total:    248 unit | Rp   164.273.800 ( 5,6%)',
   '',
   '=== BUDGET TRACKER ===',
   'Konstruksi Booth Plan: Rp 85.000.000 | Sewa Space Plan: Rp 34.160.000',
   'Media & KOL+OOH Plan: Rp 8.135.000 | SDM Plan: Rp 6.500.000',
   'Total Plan: Rp 133.795.000 | Cost Actual: Belum diisi',
-  'ROI vs Plan: +1.437% (Revenue Rp 2,056M / Budget Rp 133,8jt)',
+  'ROI vs Plan: +2.084% (Revenue Rp 2,922M / Budget Plan Rp 133,8jt)',
   '',
   '=== CATATAN ===',
-  'Walk-in data TIDAK tersedia. Hari ke-7 (3 Mei) belum diinput.',
-  'Format: gunakan ## heading, - bullet list, **bold** untuk angka penting. Maks 500 kata.',
+  'Walk-in data TIDAK tersedia di Excel — hanya ada di Daily Input manual.',
+  'Day 7 (Min 3/5) adalah hari terkuat: Rp 865 jt, 106 units — melebihi Sabtu.',
+  'Gap ke target Rp 6,157M = Rp 3,234,862,200 (52,5% belum tercapai).',
+  'Format: gunakan ## heading, - bullet list, **bold** untuk angka penting. Maks 600 kata.',
 ].join('\n');
 
 const PILL_PROMPTS = {
