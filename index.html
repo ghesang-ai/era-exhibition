@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ERA-EXHIBITION — SIERA Dashboard</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ══════════ NAVBAR ══════════ -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="brand-mark"><span>ERA</span></div>
+      <div>
+        <div class="brand-name">ERA-EXHIBITION</div>
+        <div class="brand-sub">Region 5 · Erajaya Digital</div>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab" id="tab-overview"  onclick="switchTab('overview')">
+        <span class="tab-icon">◈</span> Overview
+      </button>
+      <button class="nav-tab" id="tab-planning"  onclick="switchTab('planning')">
+        <span class="tab-icon">◳</span> Planning
+      </button>
+      <div class="tab-wrap" id="tab-daily-wrap">
+        <button class="nav-tab" id="tab-daily"     onclick="switchTab('daily')">
+          <span class="tab-icon">◉</span> Daily Input
+        </button>
+        <div class="alert-dot"></div>
+      </div>
+      <button class="nav-tab" id="tab-budget"    onclick="switchTab('budget')">
+        <span class="tab-icon">◎</span> Budget
+      </button>
+      <button class="nav-tab" id="tab-insights"  onclick="switchTab('insights')">
+        <span class="tab-icon">✦</span> AI Insights
+      </button>
+      <button class="nav-tab" id="tab-report"    onclick="switchTab('report')">
+        <span class="tab-icon">◐</span> Final Report
+      </button>
+    </div>
+
+    <div class="nav-actions">
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()" title="Download data harian sebagai CSV">↓ CSV</button>
+      <button class="btn btn-ghost btn-sm" onclick="printReport()" title="Print / Save PDF Final Report">⎙ PDF</button>
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">◑</button>
+    </div>
+  </nav>
+
+  <!-- ══════════ TAB PANELS ══════════ -->
+  <div class="tab-panels">
+
+    <!-- ─────────────────────────────────
+         TAB: OVERVIEW
+         ───────────────────────────────── -->
+    <div class="tab-panel" id="panel-overview">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-title" style="display:flex;align-items:center;gap:8px;">
+            <div class="glow-dot pulse"></div>
+            iBox Roadshow — Bintaro Jaya Xchange
+          </div>
+          <div class="page-subtitle">27 Apr – 3 Mei 2026 · Region 5 · Erajaya Digital</div>
+        </div>
+        <div class="page-header-right">
+          <span class="badge badge-live badge-dot">LIVE · Hari ke-7/7</span>
+          <div class="event-selector" style="margin:0;min-width:280px">
+            <select id="event-selector-main">
+              <option>iBox Roadshow — Bintaro Jaya Xchange (27 Apr – 3 Mei 2026)</option>
+              <option value="__new__">+ Tambah Exhibition Baru</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day Strip -->
+      <div class="day-grid">
+        <div class="day-cell past"><div class="day-name">Sen</div><div class="day-val">27/4</div></div>
+        <div class="day-cell past"><div class="day-name">Sel</div><div class="day-val">28/4</div></div>
+        <div class="day-cell past"><div class="day-name">Rab</div><div class="day-val">29/4</div></div>
+        <div class="day-cell past"><div class="day-name">Kam</div><div class="day-val">30/4</div></div>
+        <div class="day-cell past"><div class="day-name">Jum</div><div class="day-val">1/5</div></div>
+        <div class="day-cell past"><div class="day-name">Sab</div><div class="day-val">2/5</div></div>
+        <div class="day-cell today"><div class="day-name">Min</div><div class="day-val">3/5</div></div>
+      </div>
+
+      <!-- Event Cards -->
+      <div id="event-cards-container" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px"></div>
+
+      <!-- KPI Metrics with sparklines + animated counters -->
+      <div class="section-label mb-8">Key Performance Indicators</div>
+      <div class="grid-auto mb-20">
+        <div class="metric-card" style="--accent:#1D9E75">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div class="metric-label">Total Walk-in</div>
+            <div id="spark-walkin"></div>
+          </div>
+          <div class="metric-value" data-count="2847" data-decimals="0">2.847</div>
+          <div class="metric-sub">vs Mall Traffic: <strong style="color:var(--green-txt)">2,1%</strong></div>
+          <span class="metric-badge mb-green">▲ +12% vs target</span>
+        </div>
+        <div class="metric-card" style="--accent:#378ADD">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div class="metric-label">Revenue (6 Hari)</div>
+            <div id="spark-revenue"></div>
+          </div>
+          <div class="metric-value">Rp 1,43 M</div>
+          <div class="metric-sub">Target: Rp 1,2 M</div>
+          <span class="metric-badge mb-green">117% achieved</span>
+        </div>
+        <div class="metric-card" style="--accent:#7F77DD">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div class="metric-label">Conversion Rate</div>
+            <div id="spark-conv"></div>
+          </div>
+          <div class="metric-value" data-count="18.4" data-decimals="1" data-suffix="%">18,4%</div>
+          <div class="metric-sub">524 trx / 2.847 walk-in</div>
+          <span class="metric-badge mb-green">Target: 15%</span>
+        </div>
+        <div class="metric-card" style="--accent:#EF9F27">
+          <div class="metric-label">Cost per Walk-in</div>
+          <div class="metric-value" data-count="28" data-decimals="0" data-prefix="Rp " data-suffix=" rb">Rp 28 rb</div>
+          <div class="metric-sub">Budget: Rp 80 jt</div>
+          <span class="metric-badge mb-amber">Efisien</span>
+        </div>
+        <div class="metric-card" style="--accent:#1D9E75">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div class="metric-label">VMD Score</div>
+            <div id="spark-vmd"></div>
+          </div>
+          <div class="metric-value" data-count="87" data-decimals="0" data-suffix="/100">87/100</div>
+          <div class="metric-sub">Booth readiness avg</div>
+          <span class="metric-badge mb-green">Baik</span>
+        </div>
+        <div class="metric-card" style="--accent:#378ADD">
+          <div class="metric-label">Online Reach</div>
+          <div class="metric-value">1,7 jt</div>
+          <div class="metric-sub">IG iBox + Buzzer</div>
+          <span class="metric-badge mb-green">6,2 jt impresi</span>
+        </div>
+      </div>
+
+      <!-- Alerts Panel -->
+      <div id="alerts-panel" class="alert-panel mb-16"></div>
+
+      <!-- Daily Trend Chart -->
+      <div class="card card-pad mb-16">
+        <div class="card-title">
+          <div class="card-title-left">
+            <div class="card-icon">∿</div> 7-Day Performance Trend
+          </div>
+          <span class="badge badge-live">Walk-in &amp; Revenue</span>
+        </div>
+        <div id="chart-trend"></div>
+      </div>
+
+      <!-- Conv Rate Chart -->
+      <div class="card card-pad mb-16">
+        <div class="card-title">
+          <div class="card-title-left">
+            <div class="card-icon">↑</div> Conversion Rate Trend
+          </div>
+          <span class="badge badge-plan">Target ≥ 15%</span>
+        </div>
+        <div id="chart-conv"></div>
+      </div>
+
+      <!-- Funnel + Sales -->
+      <div class="grid-2 mb-16">
+        <div class="card card-pad">
+          <div class="card-title">
+            <div class="card-title-left">
+              <div class="card-icon">↓</div> Traffic &amp; Footfall Funnel
+            </div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-lbl">Mall traffic</div>
+            <div class="funnel-track"><div class="funnel-fill" style="width:100%;background:#1D9E75" data-width="100%">135.000</div></div>
+            <div class="funnel-num">135 rb</div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-lbl">Booth walk-in</div>
+            <div class="funnel-track"><div class="funnel-fill" style="width:48%;background:#378ADD" data-width="48%">2.847</div></div>
+            <div class="funnel-num">2.847</div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-lbl">Leads captured</div>
+            <div class="funnel-track"><div class="funnel-fill" style="width:22%;background:#7F77DD" data-width="22%">890</div></div>
+            <div class="funnel-num">890</div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-lbl">Transaksi</div>
+            <div class="funnel-track"><div class="funnel-fill" style="width:14%;background:#D85A30" data-width="14%">524</div></div>
+            <div class="funnel-num">524</div>
+          </div>
+        </div>
+
+        <div class="card card-pad">
+          <div class="card-title">
+            <div class="card-title-left">
+              <div class="card-icon">⊞</div> Sales per Kategori
+            </div>
+          </div>
+          <div class="progress-row">
+            <div class="progress-lbl">iPhone 17 Series</div>
+            <div class="progress-track"><div class="progress-fill" style="width:72%;background:#1D9E75" data-width="72%"></div></div>
+            <div class="progress-val">286 unit</div>
+          </div>
+          <div class="progress-row">
+            <div class="progress-lbl">Apple Watch</div>
+            <div class="progress-track"><div class="progress-fill" style="width:38%;background:#378ADD" data-width="38%"></div></div>
+            <div class="progress-val">142 unit</div>
+          </div>
+          <div class="progress-row">
+            <div class="progress-lbl">iPad Series</div>
+            <div class="progress-track"><div class="progress-fill" style="width:26%;background:#7F77DD" data-width="26%"></div></div>
+            <div class="progress-val">62 unit</div>
+          </div>
+          <div class="progress-row">
+            <div class="progress-lbl">Accessories</div>
+            <div class="progress-track"><div class="progress-fill" style="width:90%;background:#EF9F27" data-width="90%"></div></div>
+            <div class="progress-val">524 unit</div>
+          </div>
+          <div class="divider"></div>
+          <div class="row-between mb-8">
+            <span style="font-size:12px;color:var(--text-2)">Avg Transaction Value</span>
+            <span style="font-size:12.5px;font-weight:600">Rp 2.671.000</span>
+          </div>
+          <div class="row-between">
+            <span style="font-size:12px;color:var(--text-2)">Revenue per Sqm</span>
+            <span style="font-size:12.5px;font-weight:600">Rp 46,7 jt / sqm</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VMD + Online -->
+      <div class="grid-2">
+        <div class="card card-pad">
+          <div class="card-title">
+            <div class="card-title-left">
+              <div class="card-icon">✓</div> VMD Booth Readiness
+            </div>
+            <span class="badge badge-live">87/100</span>
+          </div>
+          <div class="checklist">
+            <div class="check-item">
+              <div class="check-icon ci-ok">✓</div>
+              <div class="check-body">
+                <div class="check-text">Display tables &amp; unboxing area</div>
+                <div class="check-sub">Lengkap, kondisi baik</div>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon ci-ok">✓</div>
+              <div class="check-body">
+                <div class="check-text">Accessory rack (2 double-sided)</div>
+                <div class="check-sub">Stok 85% terisi</div>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon ci-ok">✓</div>
+              <div class="check-body">
+                <div class="check-text">Tower stand original Apple</div>
+                <div class="check-sub">Semua unit terpasang</div>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon ci-warn">!</div>
+              <div class="check-body">
+                <div class="check-text">Cashier counter</div>
+                <div class="check-sub">Antrian panjang — perlu evaluasi</div>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon ci-ok">✓</div>
+              <div class="check-body">
+                <div class="check-text">Signage &amp; branding iBox</div>
+                <div class="check-sub">Semua terpasang sesuai planogram</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-pad">
+          <div class="card-title">
+            <div class="card-title-left">
+              <div class="card-icon">◉</div> Online Visibility
+            </div>
+          </div>
+          <div class="online-grid mb-16">
+            <div class="online-item">
+              <div class="online-lbl">Reach IG iBox</div>
+              <div class="online-val">1,69 jt</div>
+              <div class="online-sub">Feed + Story</div>
+            </div>
+            <div class="online-item">
+              <div class="online-lbl">Impressions</div>
+              <div class="online-val">6,17 jt</div>
+              <div class="online-sub">Total tayang</div>
+            </div>
+            <div class="online-item">
+              <div class="online-lbl">Engagement</div>
+              <div class="online-val">17.910</div>
+              <div class="online-sub">Rate: 0,7%</div>
+            </div>
+            <div class="online-item">
+              <div class="online-lbl">KOL / Buzzer</div>
+              <div class="online-val">3 akun</div>
+              <div class="online-sub">Aktif selama event</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="row-between mb-8">
+            <span style="font-size:12px;color:var(--text-2)">ROI Total Event</span>
+            <span style="font-size:12.5px;font-weight:600;color:var(--green-txt)">+75% → Rp 1,4 M dari Rp 80 jt</span>
+          </div>
+          <div class="row-between">
+            <span style="font-size:12px;color:var(--text-2)">Cost per Transaksi</span>
+            <span style="font-size:12.5px;font-weight:600">Rp 152.671</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────
+         TAB: PLANNING
+         ───────────────────────────────── -->
+    <div class="tab-panel" id="panel-planning">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-title">Exhibition Planning</div>
+          <div class="page-subtitle">Phase tracker &amp; timeline — iBox Roadshow Bintaro Jaya Xchange</div>
+        </div>
+        <div class="page-header-right">
+          <span class="badge badge-plan">6 PHASES</span>
+          <button class="btn btn-sm" onclick="sendPrompt('Buatkan checklist lengkap H-7 sebelum exhibition iBox Roadshow berikutnya, mencakup VMD, media, logistik, dan briefing tim')">Generate Checklist H-7 ↗</button>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card card-pad">
+          <div class="card-title">
+            <div class="card-title-left">
+              <div class="card-icon">◳</div> Phase Tracker
+            </div>
+          </div>
+          <div class="phase-list">
+            <div class="phase-row">
+              <div class="phase-num ph-done">✓</div>
+              <div class="phase-info">
+                <div class="phase-title">H-30: Proposal &amp; Budget Approval</div>
+                <div class="phase-desc">Brief event, target sales, floor plan, estimasi budget</div>
+                <div class="phase-date">Deadline: 27 Mar 2026 · <span style="color:var(--green-txt);font-weight:600">Selesai</span></div>
+              </div>
+            </div>
+            <div class="phase-row">
+              <div class="phase-num ph-done">✓</div>
+              <div class="phase-info">
+                <div class="phase-title">H-14: Venue &amp; Vendor Konfirmasi</div>
+                <div class="phase-desc">Booth design, kontrak area mall, koordinasi VMD &amp; logistik</div>
+                <div class="phase-date">Deadline: 13 Apr 2026 · <span style="color:var(--green-txt);font-weight:600">Selesai</span></div>
+              </div>
+            </div>
+            <div class="phase-row">
+              <div class="phase-num ph-done">✓</div>
+              <div class="phase-info">
+                <div class="phase-title">H-7: Media &amp; Materi Siap</div>
+                <div class="phase-desc">Briefing SPV, materi KOL, standing poster, SEM aktif</div>
+                <div class="phase-date">Deadline: 20 Apr 2026 · <span style="color:var(--green-txt);font-weight:600">Selesai</span></div>
+              </div>
+            </div>
+            <div class="phase-row">
+              <div class="phase-num ph-done">✓</div>
+              <div class="phase-info">
+                <div class="phase-title">H-1: Setup Booth &amp; Rehearsal</div>
+                <div class="phase-desc">Instalasi booth, cek planogram, briefing tim on-site</div>
+                <div class="phase-date">26 Apr 2026 · <span style="color:var(--green-txt);font-weight:600">Selesai</span></div>
+              </div>
+            </div>
+            <div class="phase-row">
+              <div class="phase-num ph-active">5</div>
+              <div class="phase-info">
+                <div class="phase-title">D-Day: Event Berlangsung (7 Hari)</div>
+                <div class="phase-desc">Input harian: walk-in, sales, VMD check, restock aksesori</div>
+                <div class="phase-date">27 Apr – 3 Mei 2026 · <span style="color:var(--siera-teal);font-weight:600">SEDANG BERJALAN</span></div>
+              </div>
+            </div>
+            <div class="phase-row">
+              <div class="phase-num ph-next">6</div>
+              <div class="phase-info">
+                <div class="phase-title">H+3: Final Report &amp; Evaluasi</div>
+                <div class="phase-desc">Export PDF, rekap ROI, rekomendasi untuk event berikutnya</div>
+                <div class="phase-date">Deadline: 6 Mei 2026 · <span style="color:var(--blue-txt)">Upcoming</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="card card-pad">
+            <div class="card-title">
+              <div class="card-title-left">
+                <div class="card-icon">◉</div> Event Overview
+              </div>
+            </div>
+            <div class="checklist">
+              <div class="check-item">
+                <div class="check-icon ci-ok">◈</div>
+                <div class="check-body">
+                  <div class="check-text">Brand: iBox (Apple Premium Reseller)</div>
+                  <div class="check-sub">Erajaya Digital, Region 5</div>
+                </div>
+              </div>
+              <div class="check-item">
+                <div class="check-icon ci-ok">◈</div>
+                <div class="check-body">
+                  <div class="check-text">Venue: Bintaro Jaya Xchange</div>
+                  <div class="check-sub">Booth size: 30 sqm</div>
+                </div>
+              </div>
+              <div class="check-item">
+                <div class="check-icon ci-ok">◈</div>
+                <div class="check-body">
+                  <div class="check-text">Duration: 7 hari (27 Apr – 3 Mei)</div>
+                  <div class="check-sub">Termasuk weekend prime days</div>
+                </div>
+              </div>
+              <div class="check-item">
+                <div class="check-icon ci-warn">!</div>
+                <div class="check-body">
+                  <div class="check-text">Target Revenue: Rp 1,2 Miliar</div>
+                  <div class="check-sub">Achieved: Rp 1,43 M (117%)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card card-pad">
+            <div class="card-title">
+              <div class="card-title-left">
+                <div class="card-icon">⊞</div> Tim &amp; PIC
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div class="row-between" style="font-size:12.5px">
+                <span style="color:var(--text-2)">Event Manager</span>
+                <span style="font-weight:600">Ghesang Pratano</span>
+              </div>
+              <div class="row-between" style="font-size:12.5px">
+                <span style="color:var(--text-2)">PIC Booth (On-site)</span>
+                <span style="font-weight:600">3 SPV + 6 Promotor</span>
+              </div>
+              <div class="row-between" style="font-size:12.5px">
+                <span style="color:var(--text-2)">VMD Officer</span>
+                <span style="font-weight:600">1 person</span>
+              </div>
+              <div class="row-between" style="font-size:12.5px">
+                <span style="color:var(--text-2)">KOL / Content Creator</span>
+                <span style="font-weight:600">3 accounts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-pad">
+        <div class="card-title">
+          <div class="card-title-left">
+            <div class="card-icon">✓</div> Checklist H-7 Standard
+          </div>
+          <button class="btn btn-sm" onclick="sendPrompt('Buatkan checklist H-7 lengkap untuk ERA-EXHIBITION iBox berikutnya')">Regenerate ↗</button>
+        </div>
+        <div class="grid-3">
+          <div>
+            <div class="section-label mb-8">VMD &amp; Booth</div>
+            <div class="checklist">
+              <div class="check-item"><div class="check-icon ci-ok">✓</div><div class="check-body"><div class="check-text">Floor plan final approved</div></div></div>
+              <div class="check-item"><div class="check-icon ci-ok">✓</div><div class="check-body"><div class="check-text">Display material confirmed</div></div></div>
+              <div class="check-item"><div class="check-icon ci-ok">✓</div><div class="check-body"><div class="check-text">Signage &amp; branding siap</div></div></div>
+              <div class="check-item"><div class="check-icon ci-ok">✓</div><div class="check-body"><div class="check-text">Planogram Apple approved</div></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="section-label mb-8">Media &amp; Online</div>
+            <div class="checklist">
+              <div class="check-item"><div class="check-icon ci-ok">✓</div><div class="check-body"><div class="check-text">KOL brief sudah dikirim</div></div></div>
+              <div class="check-item"><div class="check-icon ci-ok">✓</div><div class="check-body"><div class="check-text">SEM campaign aktif</div></div></div>
+              <div class="check-item"><div class="check-icon ci-ok">✓</div><div class="check-body"><div class="check-text">IG content calendar ready</div></div></div>
+              <div class="check-item"><div class="check-icon ci-warn">!</div><div class="check-body"><div class="check-text">WhatsApp blast list</div><div class="check-sub">Perlu update database</div></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="section-label mb-8">Logistik &amp; Tim</div>
+            <div class="checklist">
+              <div class="check-item"><div class="check-icon ci-ok">✓</div><div class="check-body"><div class="check-text">Stok produk konfirmasi</div></div></div>
+              <div class="check-item"><div class="check-icon ci-ok">✓</div><div class="check-body"><div class="check-text">Briefing tim on-site</div></div></div>
+              <div class="check-item"><div class="check-icon ci-ok">✓</div><div class="check-body"><div class="check-text">Payment tools ready</div></div></div>
+              <div class="check-item"><div class="check-icon ci-ok">✓</div><div class="check-body"><div class="check-text">Daily report template</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────
+         TAB: DAILY INPUT
+         ───────────────────────────────── -->
+    <div class="tab-panel" id="panel-daily">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-title">Daily Input</div>
+          <div class="page-subtitle">Hari ini: Minggu, 3 Mei 2026 — Hari ke-7 (terakhir)</div>
+        </div>
+        <div class="page-header-right">
+          <span class="badge badge-live badge-dot">Hari ke-7</span>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+
+        <!-- Input Form -->
+        <div class="card card-pad">
+          <div class="card-title">
+            <div class="card-title-left">
+              <div class="card-icon">◉</div> Input Hari Ini
+            </div>
+          </div>
+
+          <div class="brand-tabs">
+            <button class="brand-tab active">iBox</button>
+            <button class="brand-tab">Samsung Store</button>
+            <button class="brand-tab">Erafone</button>
+            <button class="brand-tab">+ Custom</button>
+          </div>
+
+          <div class="form-grid mb-12">
+            <div class="form-group">
+              <label class="form-label">Walk-in booth hari ini</label>
+              <input id="inp-walkin"  class="form-input" type="number" placeholder="contoh: 420" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mall traffic hari ini</label>
+              <input id="inp-mall"    class="form-input" type="number" placeholder="dari mall management" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Transaksi hari ini</label>
+              <input id="inp-trx"     class="form-input" type="number" placeholder="jumlah transaksi" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Revenue hari ini (Rp)</label>
+              <input id="inp-revenue" class="form-input" type="number" placeholder="nominal revenue" min="0">
+            </div>
+          </div>
+
+          <!-- Live Calculator -->
+          <div class="card" style="background:var(--bg-muted);border-color:var(--border);box-shadow:none;margin-bottom:14px">
+            <div style="padding:12px 14px">
+              <div class="section-label mb-8">Live Calculator</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+                <div style="text-align:center">
+                  <div style="font-size:10.5px;color:var(--text-3);margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:0.4px">Conv. Rate</div>
+                  <div id="live-conv" style="font-size:20px;font-weight:700;color:var(--text)">—</div>
+                  <span id="live-conv-badge" class="metric-badge mb-amber" style="font-size:10px;margin-top:3px">Target 15%</span>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-size:10.5px;color:var(--text-3);margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:0.4px">Rev / Transaksi</div>
+                  <div id="live-revtrx" style="font-size:18px;font-weight:700;color:var(--text)">—</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-size:10.5px;color:var(--text-3);margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:0.4px">Mall Capture</div>
+                  <div id="live-capture" style="font-size:18px;font-weight:700;color:var(--text)">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- VMD Check -->
+          <div class="section-label mb-8">VMD Booth Check</div>
+          <div class="vmd-grid mb-14">
+            <label class="vmd-item"><input type="checkbox" checked> Display tables OK</label>
+            <label class="vmd-item"><input type="checkbox" checked> Accessory rack terisi</label>
+            <label class="vmd-item"><input type="checkbox">         Tower stand lengkap</label>
+            <label class="vmd-item"><input type="checkbox" checked> Signage terpasang</label>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label">Catatan / Notes</label>
+            <textarea id="inp-notes" class="form-input" style="height:52px;resize:none" placeholder="Kondisi booth, kendala, highlight hari ini..."></textarea>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-primary" id="save-daily-btn" style="flex:1" onclick="saveDailyEntry()">Simpan Data ✓</button>
+            <button class="btn btn-sm" onclick="sendPrompt('Buatkan template Google Sheets daily input ERA-EXHIBITION dengan field: walk-in, mall traffic, transaksi, revenue, VMD score, per brand iBox Samsung Erafone')">Sheets ↗</button>
+          </div>
+        </div>
+
+        <!-- History & Chart -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <!-- Daily bar chart -->
+          <div class="card card-pad">
+            <div class="card-title">
+              <div class="card-title-left">
+                <div class="card-icon">⊞</div> Walk-in vs Transaksi per Hari
+              </div>
+            </div>
+            <div id="chart-daily-bar"></div>
+          </div>
+
+          <!-- History Table -->
+          <div class="card card-pad">
+            <div class="card-title">
+              <div class="card-title-left">
+                <div class="card-icon">⊞</div> Rekap Harian
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Hari</th>
+                    <th>Walk-in</th>
+                    <th>Trx</th>
+                    <th>Conv.</th>
+                    <th>Revenue</th>
+                    <th>VMD</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="daily-history-body">
+                  <tr><td>Sen 27/4</td><td>368</td><td>58</td><td>15,8%</td><td>Rp 165 jt</td><td><span class="metric-badge mb-green" style="font-size:10px">90</span></td></tr>
+                  <tr><td>Sel 28/4</td><td>412</td><td>72</td><td>17,5%</td><td>Rp 198 jt</td><td><span class="metric-badge mb-green" style="font-size:10px">88</span></td></tr>
+                  <tr><td>Rab 29/4</td><td>445</td><td>84</td><td>18,9%</td><td>Rp 231 jt</td><td><span class="metric-badge mb-green" style="font-size:10px">91</span></td></tr>
+                  <tr><td>Kam 30/4</td><td>390</td><td>65</td><td>16,7%</td><td>Rp 178 jt</td><td><span class="metric-badge mb-amber" style="font-size:10px">82</span></td></tr>
+                  <tr><td>Jum 1/5</td><td>510</td><td>98</td><td>19,2%</td><td>Rp 268 jt</td><td><span class="metric-badge mb-green" style="font-size:10px">89</span></td></tr>
+                  <tr><td>Sab 2/5</td><td>722</td><td>147</td><td>20,4%</td><td>Rp 390 jt</td><td><span class="metric-badge mb-green" style="font-size:10px">85</span></td></tr>
+                  <tr class="row-today"><td>Min 3/5 ◀ hari ini</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="divider"></div>
+            <div class="section-label mb-8">Running Total (6 hari)</div>
+            <div class="grid-2" style="gap:8px">
+              <div class="online-item">
+                <div class="online-lbl">Walk-in</div>
+                <div class="online-val" id="total-walkin">2.447</div>
+              </div>
+              <div class="online-item">
+                <div class="online-lbl">Transaksi</div>
+                <div class="online-val" id="total-trx">524</div>
+              </div>
+              <div class="online-item">
+                <div class="online-lbl">Revenue</div>
+                <div class="online-val" id="total-revenue">Rp 1,43 M</div>
+              </div>
+              <div class="online-item">
+                <div class="online-lbl">Conv. Rate</div>
+                <div class="online-val" id="total-conv">21,4%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────
+         TAB: BUDGET
+         ───────────────────────────────── -->
+    <div class="tab-panel" id="panel-budget">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-title">Budget Tracker</div>
+          <div class="page-subtitle">Anggaran &amp; realisasi — iBox Roadshow BJX 2026 · Edit kolom &ldquo;Aktual&rdquo; langsung</div>
+        </div>
+        <div class="page-header-right">
+          <span class="badge badge-live" id="budget-roi">ROI —</span>
+          <button class="btn btn-sm" onclick="sendPrompt('Buatkan template budget tracker Google Sheets untuk ERA-EXHIBITION dengan kategori: booth rental, logistik, VMD, media online, KOL, SPG/promotor')">Export Sheets ↗</button>
+        </div>
+      </div>
+
+      <div class="grid-4 mb-20">
+        <div class="metric-card" style="--accent:#1D9E75">
+          <div class="metric-label">Total Budget</div>
+          <div class="metric-value">Rp 80 jt</div>
+          <div class="metric-sub">Disetujui management</div>
+          <span class="metric-badge mb-green">Approved</span>
+        </div>
+        <div class="metric-card" style="--accent:#EF9F27">
+          <div class="metric-label">Realisasi</div>
+          <div class="metric-value" id="budget-total-actual">Rp 74,2 jt</div>
+          <div class="metric-sub"><span id="budget-pct-used">92,8%</span> terserap</div>
+          <span class="metric-badge mb-amber">On Track</span>
+        </div>
+        <div class="metric-card" style="--accent:#7F77DD">
+          <div class="metric-label">Sisa Budget</div>
+          <div class="metric-value" id="budget-sisa">Rp 5,8 jt</div>
+          <div class="metric-sub">7,2% remaining</div>
+          <span class="metric-badge mb-blue">Efisien</span>
+        </div>
+        <div class="metric-card" style="--accent:#1D9E75">
+          <div class="metric-label">Revenue Input</div>
+          <div class="metric-value">
+            <input id="inp-revenue-budget" type="number" value="1430"
+              style="width:100%;border:none;font:inherit;font-size:22px;font-weight:700;background:transparent;outline:none;color:var(--text)"
+              oninput="recomputeBudget()" title="Edit revenue (dalam juta Rp)">
+          </div>
+          <div class="metric-sub">Juta Rp · edit untuk update ROI</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Budget Rows (editable) -->
+        <div class="card card-pad">
+          <div class="card-title">
+            <div class="card-title-left">
+              <div class="card-icon">◎</div> Rincian Anggaran
+            </div>
+            <span style="font-size:11px;color:var(--text-3)">Kolom Aktual bisa diedit</span>
+          </div>
+
+          <!-- Header -->
+          <div style="display:grid;grid-template-columns:1fr 90px 90px 54px;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:4px">
+            <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-3)">Kategori</div>
+            <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-3);text-align:right">Plan (jt)</div>
+            <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--siera-teal);text-align:right">Aktual (jt)</div>
+            <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-3);text-align:right">%</div>
+          </div>
+
+          <!-- Row template: category, plan, editable actual, auto-pct -->
+          <div style="display:flex;flex-direction:column;gap:0">
+            <!-- Booth -->
+            <div style="display:grid;grid-template-columns:1fr 90px 90px 54px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+              <div>
+                <div class="budget-cat">Booth Rental &amp; Setup</div>
+                <div class="budget-bar-wrap" style="margin-top:6px">
+                  <div class="budget-bar" data-key="booth" data-width="100%" style="width:100%"></div>
+                </div>
+              </div>
+              <div style="text-align:right;font-size:12.5px;color:var(--text-2)">25,0</div>
+              <div>
+                <input class="budget-actual-input form-input" data-key="booth" data-plan="25"
+                  type="number" value="25.0" step="0.1" style="padding:4px 7px;font-size:12.5px;text-align:right">
+              </div>
+              <div class="budget-pct" data-key="booth" style="font-size:12px;font-weight:600;text-align:right;color:var(--green-txt)">100%</div>
+            </div>
+
+            <!-- VMD -->
+            <div style="display:grid;grid-template-columns:1fr 90px 90px 54px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+              <div>
+                <div class="budget-cat">VMD &amp; Display Materials</div>
+                <div class="budget-bar-wrap" style="margin-top:6px">
+                  <div class="budget-bar" data-key="vmd" data-width="78%" style="width:78%"></div>
+                </div>
+              </div>
+              <div style="text-align:right;font-size:12.5px;color:var(--text-2)">15,0</div>
+              <div>
+                <input class="budget-actual-input form-input" data-key="vmd" data-plan="15"
+                  type="number" value="11.7" step="0.1" style="padding:4px 7px;font-size:12.5px;text-align:right">
+              </div>
+              <div class="budget-pct" data-key="vmd" style="font-size:12px;font-weight:600;text-align:right;color:var(--green-txt)">78%</div>
+            </div>
+
+            <!-- Media -->
+            <div style="display:grid;grid-template-columns:1fr 90px 90px 54px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+              <div>
+                <div class="budget-cat">Media Online (SEM + IG Ads)</div>
+                <div class="budget-bar-wrap" style="margin-top:6px">
+                  <div class="budget-bar warn" data-key="media" data-width="95%" style="width:95%"></div>
+                </div>
+              </div>
+              <div style="text-align:right;font-size:12.5px;color:var(--text-2)">15,0</div>
+              <div>
+                <input class="budget-actual-input form-input" data-key="media" data-plan="15"
+                  type="number" value="14.3" step="0.1" style="padding:4px 7px;font-size:12.5px;text-align:right">
+              </div>
+              <div class="budget-pct" data-key="media" style="font-size:12px;font-weight:600;text-align:right;color:var(--amber-txt)">95%</div>
+            </div>
+
+            <!-- KOL -->
+            <div style="display:grid;grid-template-columns:1fr 90px 90px 54px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+              <div>
+                <div class="budget-cat">KOL / Buzzer (3 akun)</div>
+                <div class="budget-bar-wrap" style="margin-top:6px">
+                  <div class="budget-bar" data-key="kol" data-width="100%" style="width:100%"></div>
+                </div>
+              </div>
+              <div style="text-align:right;font-size:12.5px;color:var(--text-2)">9,0</div>
+              <div>
+                <input class="budget-actual-input form-input" data-key="kol" data-plan="9"
+                  type="number" value="9.0" step="0.1" style="padding:4px 7px;font-size:12.5px;text-align:right">
+              </div>
+              <div class="budget-pct" data-key="kol" style="font-size:12px;font-weight:600;text-align:right;color:var(--green-txt)">100%</div>
+            </div>
+
+            <!-- SPV -->
+            <div style="display:grid;grid-template-columns:1fr 90px 90px 54px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+              <div>
+                <div class="budget-cat">SPV &amp; Promotor (7 hari)</div>
+                <div class="budget-bar-wrap" style="margin-top:6px">
+                  <div class="budget-bar warn" data-key="spv" data-width="101%" style="width:100%"></div>
+                </div>
+              </div>
+              <div style="text-align:right;font-size:12.5px;color:var(--text-2)">14,0</div>
+              <div>
+                <input class="budget-actual-input form-input" data-key="spv" data-plan="14"
+                  type="number" value="14.2" step="0.1" style="padding:4px 7px;font-size:12.5px;text-align:right">
+              </div>
+              <div class="budget-pct" data-key="spv" style="font-size:12px;font-weight:600;text-align:right;color:var(--amber-txt)">101%</div>
+            </div>
+
+            <!-- Logistik -->
+            <div style="display:grid;grid-template-columns:1fr 90px 90px 54px;gap:8px;align-items:center;padding:10px 0">
+              <div>
+                <div class="budget-cat">Logistik &amp; Operasional</div>
+                <div class="budget-bar-wrap" style="margin-top:6px">
+                  <div class="budget-bar" data-key="ops" data-width="50%" style="width:50%"></div>
+                </div>
+              </div>
+              <div style="text-align:right;font-size:12.5px;color:var(--text-2)">2,0</div>
+              <div>
+                <input class="budget-actual-input form-input" data-key="ops" data-plan="2"
+                  type="number" value="1.0" step="0.1" style="padding:4px 7px;font-size:12.5px;text-align:right">
+              </div>
+              <div class="budget-pct" data-key="ops" style="font-size:12px;font-weight:600;text-align:right;color:var(--green-txt)">50%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Donut + ROI -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card card-pad">
+            <div class="card-title">
+              <div class="card-title-left">
+                <div class="card-icon">◎</div> Budget Distribution
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:24px">
+              <div id="chart-budget-donut" style="flex-shrink:0"></div>
+              <div style="flex:1">
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px">
+                    <span style="width:9px;height:9px;border-radius:2px;background:#1D9E75;flex-shrink:0"></span>
+                    <span style="color:var(--text-2)">Booth Rental</span>
+                    <span style="margin-left:auto;font-weight:600">Rp 25 jt</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px">
+                    <span style="width:9px;height:9px;border-radius:2px;background:#378ADD;flex-shrink:0"></span>
+                    <span style="color:var(--text-2)">VMD</span>
+                    <span style="margin-left:auto;font-weight:600">Rp 11,7 jt</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px">
+                    <span style="width:9px;height:9px;border-radius:2px;background:#7F77DD;flex-shrink:0"></span>
+                    <span style="color:var(--text-2)">Media Online</span>
+                    <span style="margin-left:auto;font-weight:600">Rp 14,3 jt</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px">
+                    <span style="width:9px;height:9px;border-radius:2px;background:#EF9F27;flex-shrink:0"></span>
+                    <span style="color:var(--text-2)">KOL</span>
+                    <span style="margin-left:auto;font-weight:600">Rp 9 jt</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px">
+                    <span style="width:9px;height:9px;border-radius:2px;background:#D85A30;flex-shrink:0"></span>
+                    <span style="color:var(--text-2)">SPV &amp; Promotor</span>
+                    <span style="margin-left:auto;font-weight:600">Rp 14,2 jt</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card card-pad">
+            <div class="card-title">
+              <div class="card-title-left">
+                <div class="card-icon">◈</div> ROI Breakdown
+              </div>
+            </div>
+            <div class="progress-row">
+              <div class="progress-lbl">Revenue</div>
+              <div class="progress-track"><div class="progress-fill" style="width:100%" data-width="100%"></div></div>
+              <div class="progress-val">Rp 1,43 M</div>
+            </div>
+            <div class="progress-row">
+              <div class="progress-lbl">Cost Used</div>
+              <div class="progress-track"><div class="progress-fill" style="width:5.2%;background:#EF9F27" data-width="5.2%"></div></div>
+              <div class="progress-val">Rp 74 jt</div>
+            </div>
+            <div class="divider"></div>
+            <div class="row-between mb-8">
+              <span style="font-size:12px;color:var(--text-2)">Gross Profit</span>
+              <span style="font-size:13px;font-weight:700;color:var(--green-txt)">Rp 1,356 M</span>
+            </div>
+            <div class="row-between mb-8">
+              <span style="font-size:12px;color:var(--text-2)">Cost per Transaction</span>
+              <span style="font-size:13px;font-weight:700">Rp 141.509</span>
+            </div>
+            <div class="row-between">
+              <span style="font-size:12px;color:var(--text-2)">Cost per Walk-in</span>
+              <span style="font-size:13px;font-weight:700">Rp 26.063</span>
+            </div>
+          </div>
+
+          <div class="card card-pad">
+            <div class="card-title">
+              <div class="card-title-left">
+                <div class="card-icon">!</div> Overspend Alert
+              </div>
+              <span class="badge badge-warn">1 item</span>
+            </div>
+            <div class="checklist">
+              <div class="check-item">
+                <div class="check-icon ci-warn">!</div>
+                <div class="check-body">
+                  <div class="check-text">SPV &amp; Promotor over 1%</div>
+                  <div class="check-sub">Rp 200rb over — overtime weekend</div>
+                </div>
+              </div>
+              <div class="check-item">
+                <div class="check-icon ci-ok">✓</div>
+                <div class="check-body">
+                  <div class="check-text">Media Online 95% — efisien</div>
+                  <div class="check-sub">Sisa Rp 700rb</div>
+                </div>
+              </div>
+              <div class="check-item">
+                <div class="check-icon ci-ok">✓</div>
+                <div class="check-body">
+                  <div class="check-text">Logistik 50% — bisa carry-over</div>
+                  <div class="check-sub">Sisa Rp 1 jt dialokasikan ke next event</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────
+         TAB: AI INSIGHTS
+         ───────────────────────────────── -->
+    <div class="tab-panel" id="panel-insights">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-title">AI Insights</div>
+          <div class="page-subtitle">Analisis cerdas berbasis data ERA-EXHIBITION — Powered by Claude</div>
+        </div>
+        <div class="page-header-right">
+          <span class="badge badge-plan">✦ CLAUDE AI</span>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="insight-card">
+          <div class="insight-header">
+            <div class="insight-icon">✦</div>
+            <div>
+              <div class="insight-title">Tanya Claude tentang Event Ini</div>
+              <div class="insight-meta">Analisis data, rekomendasi, forecast next exhibition</div>
+            </div>
+          </div>
+          <div class="insight-body">
+            <div class="section-label mb-8">Quick Prompts</div>
+            <div class="quick-prompts">
+              <button class="qp-btn" onclick="sendQuickPrompt('Apa insight terpenting dari iBox Roadshow BJX 2026 untuk direplikasi di event berikutnya?')">💡 Key Insights</button>
+              <button class="qp-btn" onclick="sendQuickPrompt('Analisis conversion rate 18.4% iBox Roadshow — apa yang mendorong dan bagaimana meningkatkan ke 22%?')">📈 Konversi</button>
+              <button class="qp-btn" onclick="sendQuickPrompt('Buatkan strategi online visibility lebih optimal untuk exhibition iBox berikutnya, berdasarkan data reach 1.7 juta dan engagement 0.7%')">📱 Online Strategy</button>
+              <button class="qp-btn" onclick="sendQuickPrompt('Forecast revenue untuk 3 exhibition iBox berikutnya berdasarkan tren data Bintaro Jaya Xchange')">🔮 Forecast</button>
+              <button class="qp-btn" onclick="sendQuickPrompt('Buatkan rekomendasi staffing optimal untuk exhibition 7 hari dengan target traffic 400+ per hari')">👥 Staffing Plan</button>
+              <button class="qp-btn" onclick="sendQuickPrompt('Analisis budget allocation iBox Roadshow — area mana yang harus ditingkatkan dan mana yang bisa dipotong untuk ROI lebih tinggi?')">💰 Budget Analysis</button>
+              <button class="qp-btn" onclick="sendQuickPrompt('Buatkan brief untuk next iBox exhibition di Pondok Indah Mall berdasarkan learnings dari Bintaro Jaya Xchange')">📋 Next Brief</button>
+              <button class="qp-btn" onclick="sendQuickPrompt('Apa pola traffic terbaik dari 6 hari event? Hari apa optimal untuk promo flash sale atau live demo?')">⏰ Traffic Pattern</button>
+            </div>
+            <div class="insight-prompt">
+              <textarea id="ai-textarea" placeholder="Ketik pertanyaan atau minta analisis..."></textarea>
+              <button class="btn btn-primary" onclick="sendPrompt(document.getElementById('ai-textarea').value)" style="align-self:flex-end;flex-shrink:0">Kirim ↗</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="insight-card">
+            <div class="insight-header" style="background:linear-gradient(135deg,var(--siera-teal-light),#EEF4FD)">
+              <div class="insight-icon">↑</div>
+              <div>
+                <div class="insight-title">Performance Highlights</div>
+                <div class="insight-meta">Auto-generated dari data 6 hari</div>
+              </div>
+            </div>
+            <div class="insight-body">
+              <div class="checklist">
+                <div class="check-item">
+                  <div class="check-icon ci-ok">▲</div>
+                  <div class="check-body">
+                    <div class="check-text">Revenue 117% dari target</div>
+                    <div class="check-sub">Sabtu mencapai Rp 390 jt — single-day peak</div>
+                  </div>
+                </div>
+                <div class="check-item">
+                  <div class="check-icon ci-ok">▲</div>
+                  <div class="check-body">
+                    <div class="check-text">Conv. Rate tren naik tiap hari</div>
+                    <div class="check-sub">15,8% → 20,4% — tren positif konsisten</div>
+                  </div>
+                </div>
+                <div class="check-item">
+                  <div class="check-icon ci-warn">!</div>
+                  <div class="check-body">
+                    <div class="check-text">Cashier bottleneck weekend</div>
+                    <div class="check-sub">Antrian &gt;15 menit — potensi lost sales Rp 30-50 jt</div>
+                  </div>
+                </div>
+                <div class="check-item">
+                  <div class="check-icon ci-ok">▲</div>
+                  <div class="check-body">
+                    <div class="check-text">Accessories attach rate 1:1</div>
+                    <div class="check-sub">524 accessories per 524 transaksi = perfect upsell</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="insight-card">
+            <div class="insight-header" style="background:linear-gradient(135deg,var(--amber-bg),var(--red-bg))">
+              <div class="insight-icon" style="background:var(--siera-amber)">→</div>
+              <div>
+                <div class="insight-title">Rekomendasi Next Event</div>
+                <div class="insight-meta">AI-powered · prioritized by impact</div>
+              </div>
+            </div>
+            <div class="insight-body">
+              <div class="checklist">
+                <div class="check-item">
+                  <div class="check-icon ci-next">1</div>
+                  <div class="check-body">
+                    <div class="check-text">+1 kasir di Sabtu-Minggu</div>
+                    <div class="check-sub">Est. +50 trx extra → +Rp 133 jt revenue</div>
+                  </div>
+                </div>
+                <div class="check-item">
+                  <div class="check-icon ci-next">2</div>
+                  <div class="check-body">
+                    <div class="check-text">Aktivasi KOL di H-5</div>
+                    <div class="check-sub">Day 1-2 traffic gap ~20% bisa ditutup</div>
+                  </div>
+                </div>
+                <div class="check-item">
+                  <div class="check-icon ci-next">3</div>
+                  <div class="check-body">
+                    <div class="check-text">Perkuat stok accessories H-3</div>
+                    <div class="check-sub">Rack kosong 2x = ~Rp 20 jt missed revenue</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── AI GENERATION PANELS ─── -->
+      <div class="grid-2 mb-16">
+
+        <!-- Claude -->
+        <div class="ai-gen-card" id="claude-gen-card">
+          <div class="ai-gen-header ai-claude">
+            <div class="ai-gen-logo">✦</div>
+            <div>
+              <div class="ai-gen-title">Generate AI Analysis — Claude</div>
+              <div class="ai-gen-sub">Claude (Anthropic) akan menganalisis semua data ERA-EXHIBITION</div>
+            </div>
+          </div>
+          <div class="ai-model-row" id="claude-model-row">
+            <button class="ai-model-btn" data-model="haiku" onclick="selectAIModel(this)">
+              <span>⚡</span>Haiku<span class="ai-model-sub">Cepat · Hemat</span>
+            </button>
+            <button class="ai-model-btn active" data-model="sonnet" onclick="selectAIModel(this)">
+              <span>✦</span>Sonnet<span class="ai-model-sub">Terbaik · Dalam</span>
+            </button>
+            <button class="ai-model-btn" data-model="auto" onclick="selectAIModel(this)">
+              <span>◑</span>Auto<span class="ai-model-sub">Fallback Otomatis</span>
+            </button>
+          </div>
+          <div class="ai-gen-body">
+            <div class="form-label" style="font-size:12px;margin-bottom:6px">✎ Custom Prompt <span style="color:var(--text-3);font-weight:400">(Opsional)</span></div>
+            <textarea id="claude-custom-prompt" class="form-input" style="height:56px;resize:none;font-size:12.5px" placeholder="Tambahkan instruksi khusus untuk analisis Claude (opsional)..."></textarea>
+            <button class="btn btn-primary" style="width:100%;margin-top:10px;justify-content:center;gap:6px" onclick="generateAnalysis('claude')">
+              ✦ Generate Analisis dengan Claude
+            </button>
+            <div class="ai-type-pills" id="claude-types">
+              <button class="ai-pill active" onclick="toggleAIPill(this)">📊 Descriptive</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">🔍 Diagnostic</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">📈 Predictive</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">💡 Prescriptive</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">💰 Sales</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">🛎 Layanan</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">⚙️ Operation</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">👥 People</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">📑 Financial</button>
+            </div>
+            <div class="ai-result" id="claude-result">
+              <div class="ai-result-empty">
+                <span style="font-size:22px;opacity:.4">✦</span>
+                <p>Tekan tombol di atas untuk meminta Claude menganalisis<br>data ERA-EXHIBITION secara lengkap —<br>4 metode analisis · 5 aspek · rekomendasi prioritas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DeepSeek -->
+        <div class="ai-gen-card" id="deepseek-gen-card">
+          <div class="ai-gen-header ai-deepseek">
+            <div class="ai-gen-logo ai-logo-ds">◈</div>
+            <div>
+              <div class="ai-gen-title">Generate AI Analysis — DeepSeek</div>
+              <div class="ai-gen-sub">DeepSeek akan menganalisis semua data ERA-EXHIBITION</div>
+            </div>
+          </div>
+          <div class="ai-model-row" id="deepseek-model-row">
+            <button class="ai-model-btn active" data-model="v3" onclick="selectAIModel(this)">
+              <span>⚡</span>V3 Chat<span class="ai-model-sub">Cepat · Hemat</span>
+            </button>
+            <button class="ai-model-btn" data-model="r1" onclick="selectAIModel(this)">
+              <span>◈</span>R1 Reasoner<span class="ai-model-sub">Dalam · Reasoning</span>
+            </button>
+            <button class="ai-model-btn" data-model="auto" onclick="selectAIModel(this)">
+              <span>◑</span>Auto<span class="ai-model-sub">Fallback Otomatis</span>
+            </button>
+          </div>
+          <div class="ai-gen-body">
+            <div class="form-label" style="font-size:12px;margin-bottom:6px">✎ Custom Prompt <span style="color:var(--text-3);font-weight:400">(Opsional)</span></div>
+            <textarea id="deepseek-custom-prompt" class="form-input" style="height:56px;resize:none;font-size:12.5px" placeholder="Tambahkan instruksi khusus (opsional)... Contoh: Fokuskan ke toko dengan performa di bawah 20%..."></textarea>
+            <button class="btn btn-ds" style="width:100%;margin-top:10px;justify-content:center;gap:6px" onclick="generateAnalysis('deepseek')">
+              ◈ Generate Analisis dengan DeepSeek
+            </button>
+            <div class="ai-type-pills" id="deepseek-types">
+              <button class="ai-pill active" onclick="toggleAIPill(this)">📊 Descriptive</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">🔍 Diagnostic</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">📈 Predictive</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">💡 Prescriptive</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">💰 Sales</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">🛎 Layanan</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">⚙️ Operation</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">👥 People</button>
+              <button class="ai-pill" onclick="toggleAIPill(this)">📑 Financial</button>
+            </div>
+            <div class="ai-result" id="deepseek-result">
+              <div class="ai-result-empty">
+                <span style="font-size:22px;opacity:.4">◈</span>
+                <p>Tekan tombol di atas untuk meminta DeepSeek menganalisis<br>data ERA-EXHIBITION secara lengkap —<br>4 metode analisis · 5 aspek · rekomendasi prioritas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /grid-2 AI gen -->
+
+      <div class="card card-pad">
+        <div class="card-title">
+          <div class="card-title-left">
+            <div class="card-icon">✦</div> AI-Generated Documents
+          </div>
+        </div>
+        <div class="grid-3" style="gap:10px">
+          <button class="card card-pad" style="text-align:left;cursor:pointer;border:1px dashed var(--border-md);box-shadow:none;transition:all 0.15s"
+            onclick="sendPrompt('Buatkan final report PDF-ready iBox Roadshow Bintaro Jaya Xchange 27 Apr - 3 Mei 2026 dengan format style Pak Andre: teal header, navy panel, semua data dari ERA-EXHIBITION dashboard')"
+            onmouseover="this.style.borderColor='var(--siera-teal)';this.style.background='var(--siera-teal-light)'"
+            onmouseout="this.style.borderColor='var(--border-md)';this.style.background='var(--bg)'">
+            <div style="font-size:22px;margin-bottom:6px">📄</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:3px">Final Report PDF</div>
+            <div style="font-size:11.5px;color:var(--text-2)">Format style Pak Andre, teal header</div>
+          </button>
+          <button class="card card-pad" style="text-align:left;cursor:pointer;border:1px dashed var(--border-md);box-shadow:none;transition:all 0.15s"
+            onclick="sendPrompt('Buatkan slide summary 3 halaman PPTX untuk presentasi ke Pak Andre — hasil iBox Roadshow BJX 2026')"
+            onmouseover="this.style.borderColor='var(--siera-teal)';this.style.background='var(--siera-teal-light)'"
+            onmouseout="this.style.borderColor='var(--border-md)';this.style.background='var(--bg)'">
+            <div style="font-size:22px;margin-bottom:6px">📊</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:3px">Presentation Deck</div>
+            <div style="font-size:11.5px;color:var(--text-2)">3-slide PPTX untuk Pak Andre</div>
+          </button>
+          <button class="card card-pad" style="text-align:left;cursor:pointer;border:1px dashed var(--border-md);box-shadow:none;transition:all 0.15s"
+            onclick="sendPrompt('Buatkan template Google Sheets ERA-EXHIBITION untuk next exhibition dengan semua parameter: daily input, budget tracker, VMD log, online metrics, summary dashboard')"
+            onmouseover="this.style.borderColor='var(--siera-teal)';this.style.background='var(--siera-teal-light)'"
+            onmouseout="this.style.borderColor='var(--border-md)';this.style.background='var(--bg)'">
+            <div style="font-size:22px;margin-bottom:6px">📋</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:3px">Master Google Sheets</div>
+            <div style="font-size:11.5px;color:var(--text-2)">Template untuk next exhibition</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────
+         TAB: FINAL REPORT
+         ───────────────────────────────── -->
+    <div class="tab-panel" id="panel-report">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-title">Final Report</div>
+          <div class="page-subtitle">iBox Roadshow — Bintaro Jaya Xchange · 27 Apr – 3 Mei 2026</div>
+        </div>
+        <div class="page-header-right">
+          <span class="badge badge-done">H+3 setelah event</span>
+          <button class="btn btn-primary btn-sm" onclick="sendPrompt('Buatkan final report PDF-ready untuk iBox Roadshow Bintaro Jaya Xchange 27 Apr - 3 Mei 2026 dengan semua data di ERA-EXHIBITION dashboard, format style Pak Andre teal header navy panel')">Export PDF Report ↗</button>
+          <button class="btn btn-sm" onclick="sendPrompt('Buatkan slide summary 3 halaman PPTX untuk presentasi ke Pak Andre hasil iBox Roadshow Bintaro Jaya Xchange')">Export PPTX ↗</button>
+        </div>
+      </div>
+
+      <div class="grid-3 mb-20">
+        <div class="card card-pad" style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div class="score-big">A</div>
+          <div style="font-size:13px;font-weight:600">Exhibition Score</div>
+          <div style="font-size:11.5px;color:var(--text-2)">Sales · Traffic · VMD · Online</div>
+          <span class="badge badge-live">Excellent</span>
+        </div>
+        <div class="card card-pad" style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div class="score-big">87</div>
+          <div style="font-size:13px;font-weight:600">VMD Booth Score</div>
+          <div style="font-size:11.5px;color:var(--text-2)">Rata-rata 7 hari · /100</div>
+          <span class="badge badge-live">Baik</span>
+        </div>
+        <div class="card card-pad" style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div class="score-big" style="font-size:28px;color:var(--siera-blue)">Repeat ✓</div>
+          <div style="font-size:13px;font-weight:600">Rekomendasi</div>
+          <div style="font-size:11.5px;color:var(--text-2)">ROI positif, traffic tinggi</div>
+          <span class="badge badge-plan">Direkomendasikan</span>
+        </div>
+      </div>
+
+      <div class="section-label mb-8">Ringkasan Hasil Event</div>
+      <div class="grid-4 mb-20">
+        <div class="metric-card" style="--accent:#1D9E75">
+          <div class="metric-label">Total Walk-in</div>
+          <div class="metric-value">2.847</div>
+          <div class="metric-sub">7 hari event</div>
+        </div>
+        <div class="metric-card" style="--accent:#378ADD">
+          <div class="metric-label">Total Revenue</div>
+          <div class="metric-value">Rp 1,43 M</div>
+          <div class="metric-sub">117% dari target</div>
+          <span class="metric-badge mb-green">+Rp 230 jt</span>
+        </div>
+        <div class="metric-card" style="--accent:#7F77DD">
+          <div class="metric-label">ROI Event</div>
+          <div class="metric-value">+75%</div>
+          <div class="metric-sub">Budget: Rp 80 jt</div>
+        </div>
+        <div class="metric-card" style="--accent:#EF9F27">
+          <div class="metric-label">Avg Conv. Rate</div>
+          <div class="metric-value">18,4%</div>
+          <div class="metric-sub">Target: 15%</div>
+          <span class="metric-badge mb-green">+3,4 pp</span>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card card-pad">
+          <div class="card-title">
+            <div class="card-title-left">
+              <div class="card-icon">⊞</div> Daily Performance Summary
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Hari</th><th>Walk-in</th><th>Revenue</th><th>Conv.</th><th>VMD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Sen 27/4</td><td>368</td><td>Rp 165 jt</td><td>15,8%</td><td><span class="metric-badge mb-green" style="font-size:10px">90</span></td></tr>
+                <tr><td>Sel 28/4</td><td>412</td><td>Rp 198 jt</td><td>17,5%</td><td><span class="metric-badge mb-green" style="font-size:10px">88</span></td></tr>
+                <tr><td>Rab 29/4</td><td>445</td><td>Rp 231 jt</td><td>18,9%</td><td><span class="metric-badge mb-green" style="font-size:10px">91</span></td></tr>
+                <tr><td>Kam 30/4</td><td>390</td><td>Rp 178 jt</td><td>16,7%</td><td><span class="metric-badge mb-amber" style="font-size:10px">82</span></td></tr>
+                <tr><td>Jum 1/5</td><td>510</td><td>Rp 268 jt</td><td>19,2%</td><td><span class="metric-badge mb-green" style="font-size:10px">89</span></td></tr>
+                <tr><td>Sab 2/5</td><td>722</td><td>Rp 390 jt</td><td>20,4%</td><td><span class="metric-badge mb-green" style="font-size:10px">85</span></td></tr>
+                <tr><td>Min 3/5</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr style="font-weight:700;background:var(--bg-muted)">
+                  <td>Total</td><td>2.847</td><td>Rp 1,43 M</td><td>18,4%</td>
+                  <td><span class="metric-badge mb-green" style="font-size:10px">87</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card card-pad">
+          <div class="card-title">
+            <div class="card-title-left">
+              <div class="card-icon">→</div> Rekomendasi Next Exhibition
+            </div>
+          </div>
+          <div class="checklist">
+            <div class="check-item">
+              <div class="check-icon ci-next">1</div>
+              <div class="check-body">
+                <div class="check-text">Tambah 1 kasir di hari weekend</div>
+                <div class="check-sub">Antrian panjang Sabtu-Minggu — est. +50 extra trx / weekend</div>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon ci-next">2</div>
+              <div class="check-body">
+                <div class="check-text">Perkuat stok accessories H-3 sebelum weekend</div>
+                <div class="check-sub">Rack kosong 2x — potensi missed revenue Rp 15-20 jt</div>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon ci-next">3</div>
+              <div class="check-body">
+                <div class="check-text">Aktivasi KOL di H-5, bukan H-1</div>
+                <div class="check-sub">Traffic hari 1-2 rendah karena late KOL activation</div>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon ci-next">4</div>
+              <div class="check-body">
+                <div class="check-text">Target venue: weekend traffic &gt;20.000/hari</div>
+                <div class="check-sub">BJX 19k+/hari — diatas threshold. Rekomendasikan repeat.</div>
+              </div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="row-between mb-8">
+            <span style="font-size:12px;color:var(--text-2)">Tanggal laporan</span>
+            <span style="font-size:12.5px;font-weight:600">6 Mei 2026</span>
+          </div>
+          <div class="row-between">
+            <span style="font-size:12px;color:var(--text-2)">Dibuat oleh</span>
+            <span style="font-size:12.5px;font-weight:600">Ghesang Pratano · Region 5</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-panels -->
+</div><!-- /app -->
+
+<!-- ══════════ ADD EVENT MODAL ══════════ -->
+<div class="modal-overlay" id="modal-add-event">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="modal-title-icon">＋</div>
+        Tambah Exhibition Baru
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-add-event')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Nama Exhibition *</label>
+          <input id="modal-event-name" class="form-input" type="text" placeholder="contoh: iBox Roadshow Pondok Indah Mall">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tanggal</label>
+          <input id="modal-event-dates" class="form-input" type="text" placeholder="contoh: 15/6 – 21/6 2026">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Brand</label>
+          <input id="modal-event-brand" class="form-input" type="text" placeholder="iBox / Samsung / Erafone">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Venue</label>
+          <input id="modal-event-venue" class="form-input" type="text" placeholder="contoh: Pondok Indah Mall 2">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Revenue (Rp juta)</label>
+          <input id="modal-event-target" class="form-input" type="number" placeholder="contoh: 1200" min="0">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-add-event')">Batal</button>
+      <button class="btn btn-primary" onclick="submitAddEvent()">Tambah Event ✓</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
