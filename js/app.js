@@ -893,7 +893,7 @@ function refreshAPIKeyStatus() {
   if (el) el.innerHTML = '🔒 <span style="color:var(--green-txt)">Claude ✓</span> · <span style="color:var(--green-txt)">DeepSeek ✓</span> — secured via Netlify';
 }
 
-const CLAUDE_MODELS   = { haiku:'claude-3-5-haiku-20241022', sonnet:'claude-3-5-sonnet-20241022', auto:'claude-3-5-sonnet-20241022' };
+const CLAUDE_MODELS   = { haiku:'claude-3-haiku-20240307', sonnet:'claude-3-5-sonnet-20241022', auto:'claude-3-5-sonnet-20241022' };
 const DEEPSEEK_MODELS = { v3:'deepseek-chat', r1:'deepseek-reasoner', auto:'deepseek-chat' };
 
 const ERA_SYSTEM_PROMPT = [
@@ -992,13 +992,16 @@ async function _claudeAPICall(resultEl, pills, customPrompt, model) {
       }),
     });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error?.message || 'HTTP ' + resp.status);
+    if (!resp.ok) {
+      const errMsg = data.error?.message || data.type || JSON.stringify(data).slice(0,120);
+      throw new Error('[HTTP ' + resp.status + '] ' + errMsg);
+    }
     const rawText = data.content?.[0]?.text || '(Tidak ada respons)';
     const mLabel  = modelId.includes('haiku') ? 'Claude Haiku' : 'Claude Sonnet';
     const tokInfo = data.usage?.output_tokens ? ' · ' + data.usage.output_tokens + ' tok' : '';
     _renderAIResult(resultEl, rawText, mLabel, 'mb-green', customPrompt, tokInfo);
   } catch(err) {
-    _renderAIError(resultEl, err.message);
+    _renderAIError(resultEl, err.message, 'claude');
   }
 }
 
@@ -1055,13 +1058,18 @@ function _renderAIResult(resultEl, rawText, mLabel, badgeCls, customPrompt, tokI
     </div>`;
 }
 
-function _renderAIError(resultEl, msg) {
+function _renderAIError(resultEl, msg, provider) {
+  const isBilling = msg.includes('429') || msg.includes('quota') || msg.includes('credit') || msg.includes('billing');
+  const isModel   = msg.includes('model:') || msg.includes('not_found');
+  let hint = 'Periksa koneksi internet dan validitas API key.';
+  if (isBilling) hint = '💳 Kemungkinan API key belum punya kredit — cek billing di console.anthropic.com';
+  if (isModel)   hint = '🔑 Model tidak tersedia — coba pilih model <strong>Sonnet</strong> atau <strong>Auto</strong>';
   resultEl.innerHTML = '<div style="padding:16px">'
-    + '<div style="color:var(--red-txt);font-size:13px;font-weight:600">⚠️ Error memanggil AI API</div>'
-    + '<div style="font-size:12px;color:var(--text-2);margin-top:6px">' + msg + '</div>'
-    + '<div style="font-size:11.5px;color:var(--text-3);margin-top:8px">'
-    + 'Periksa koneksi internet dan validitas API key.</div></div>';
-  showToast('AI API error: ' + msg, 'error');
+    + '<div style="color:var(--red-txt);font-size:13px;font-weight:600">⚠️ Error memanggil '
+    + (provider === 'claude' ? 'Claude' : 'DeepSeek') + ' API</div>'
+    + '<div style="font-size:12px;color:var(--text-2);margin-top:6px;font-family:monospace">' + msg + '</div>'
+    + '<div style="font-size:11.5px;color:var(--text-3);margin-top:8px">' + hint + '</div></div>';
+  showToast((provider === 'claude' ? 'Claude' : 'DeepSeek') + ' error: ' + msg.slice(0,60), 'error');
 }
 
 function _mdToHtml(md) {
