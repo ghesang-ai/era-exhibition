@@ -456,24 +456,149 @@ function printReport() {
   setTimeout(() => window.print(), 220);
 }
 
-/* ── Generate PDF via browser print dialog ── */
+/* ── Generate PDF dari hasil AI Analysis ── */
 function generatePDF() {
+  const claudeResult   = document.getElementById('claude-result');
+  const deepseekResult = document.getElementById('deepseek-result');
+
+  const claudeContent   = claudeResult?.querySelector('.ai-result-content');
+  const deepseekContent = deepseekResult?.querySelector('.ai-result-content');
+
+  // Cek apakah ada hasil AI analysis
+  if (!claudeContent && !deepseekContent) {
+    showToast('Generate AI Analysis dulu sebelum export PDF', 'error');
+    return;
+  }
+
   const loader = document.getElementById('doc-pdf-loader');
   if (loader) loader.style.display = 'flex';
 
-  // Switch to Final Report tab first, then print
-  switchTab('report');
-  setTimeout(() => {
-    if (loader) loader.style.display = 'none';
-    window.print();
-    showToast('Print dialog dibuka — pilih "Save as PDF" ✓', 'success');
-  }, 400);
+  const isDark   = document.body.classList.contains('dark');
+  const dateStr  = new Date().toLocaleString('id-ID', { dateStyle:'full', timeStyle:'short' });
+
+  const buildSection = (title, color, el) => {
+    if (!el) return '';
+    const inner = el.querySelector('[style*="font-size:13px"]')?.innerHTML
+                || el.innerHTML;
+    return `
+      <div style="margin-bottom:32px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;
+                    padding-bottom:10px;border-bottom:2px solid ${color}">
+          <div style="width:10px;height:10px;border-radius:50%;background:${color}"></div>
+          <div style="font-size:15px;font-weight:700;color:#0C0D0E">${title}</div>
+        </div>
+        <div style="font-size:13px;line-height:1.7;color:#2A2C30">${inner}</div>
+      </div>`;
+  };
+
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>ERA-EXHIBITION AI Analysis Report</title>
+  <style>
+    @media print { @page { margin: 18mm 16mm; } }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+           margin: 0; padding: 0; background: #fff; color: #0C0D0E; }
+    .cover { background: linear-gradient(135deg,#1D9E75,#0D6E50);
+             padding: 32px 36px 28px; color: #fff; }
+    .cover-logo { font-size: 11px; font-weight: 700; letter-spacing: .12em;
+                  opacity: .75; margin-bottom: 8px; }
+    .cover-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .cover-sub { font-size: 13px; opacity: .85; }
+    .cover-meta { margin-top: 18px; display: flex; gap: 20px; }
+    .cover-pill { background: rgba(255,255,255,.2); border-radius: 20px;
+                  padding: 4px 13px; font-size: 11px; font-weight: 600; }
+    .body { padding: 32px 36px; }
+    .kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px;
+               margin-bottom: 28px; }
+    .kpi { border: 1.5px solid #EAEBED; border-radius: 10px; padding: 12px 14px; }
+    .kpi-label { font-size: 10.5px; color: #9EA1A8; margin-bottom: 4px; text-transform:uppercase; letter-spacing:.04em; }
+    .kpi-val { font-size: 18px; font-weight: 800; color: #0C0D0E; }
+    .kpi-sub { font-size: 10.5px; color: #5A5D63; margin-top: 2px; }
+    h4 { font-size: 12.5px; font-weight: 700; color: #1D9E75; margin: 12px 0 5px; }
+    ul { margin: 4px 0 10px 16px; padding: 0; }
+    li { margin-bottom: 4px; line-height: 1.6; font-size: 12.5px; }
+    strong { color: #0C0D0E; }
+    .footer { margin-top: 36px; padding-top: 12px; border-top: 1.5px solid #EAEBED;
+              display: flex; justify-content: space-between;
+              font-size: 10.5px; color: #9EA1A8; }
+  </style>
+</head>
+<body>
+  <div class="cover">
+    <div class="cover-logo">ERA-EXHIBITION · SIERA DASHBOARD</div>
+    <div class="cover-title">AI Analysis Report</div>
+    <div class="cover-sub">iBox Roadshow — Bintaro Jaya Xchange · 27 Apr – 3 Mei 2026</div>
+    <div class="cover-meta">
+      <div class="cover-pill">7 Hari Selesai</div>
+      <div class="cover-pill">434 Unit Terjual</div>
+      <div class="cover-pill">Rp 2,922 M Revenue</div>
+      <div class="cover-pill">Achievement 47,5%</div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-val">Rp 2,922 M</div>
+        <div class="kpi-sub">Target Rp 6,157 M</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Achievement</div>
+        <div class="kpi-val" style="color:#EF9F27">47,5%</div>
+        <div class="kpi-sub">Gap Rp 3,234 M</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total Units</div>
+        <div class="kpi-val">434</div>
+        <div class="kpi-sub">Device 186 · VAS 248</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">ROI vs Plan</div>
+        <div class="kpi-val" style="color:#1D9E75">+2.084%</div>
+        <div class="kpi-sub">Budget Plan Rp 133,8 jt</div>
+      </div>
+    </div>
+
+    ${buildSection('✦ Claude AI Analysis', '#1D9E75', claudeContent)}
+    ${buildSection('◈ DeepSeek AI Analysis', '#4B6BF5', deepseekContent)}
+
+    <div class="footer">
+      <span>Generated: ${dateStr}</span>
+      <span>ERA-EXHIBITION SIERA Dashboard · Region 5 · Erajaya Digital</span>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => {
+    setTimeout(() => {
+      win.print();
+      if (loader) loader.style.display = 'none';
+      showToast('PDF report dibuka — pilih "Save as PDF" ✓', 'success');
+    }, 350);
+  };
 }
 
-/* ── Capture Screenshot (PNG) via html2canvas ── */
+/* ── Capture Screenshot hasil AI Analysis (PNG) ── */
 async function captureScreenshot() {
   if (typeof html2canvas === 'undefined') {
     showToast('html2canvas belum dimuat — coba refresh halaman', 'error');
+    return;
+  }
+
+  const claudeResult   = document.getElementById('claude-result');
+  const deepseekResult = document.getElementById('deepseek-result');
+  const hasContent = claudeResult?.querySelector('.ai-result-content')
+                  || deepseekResult?.querySelector('.ai-result-content');
+
+  if (!hasContent) {
+    showToast('Generate AI Analysis dulu sebelum screenshot', 'error');
     return;
   }
 
@@ -481,37 +606,78 @@ async function captureScreenshot() {
   if (loader) loader.style.display = 'flex';
 
   try {
-    // Capture the active tab panel
-    const activePanel = document.querySelector('.tab-panel.active') || document.querySelector('.app');
-    const canvas = await html2canvas(activePanel, {
+    // Buat wrapper sementara yang berisi kedua hasil analisis
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = [
+      'position:fixed', 'top:-9999px', 'left:-9999px',
+      'width:900px', 'padding:28px 32px',
+      'background:' + (document.body.classList.contains('dark') ? '#141618' : '#F7F8F9'),
+      'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
+      'border-radius:16px',
+    ].join(';');
+
+    // Header
+    wrapper.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;
+                  margin-bottom:20px;padding-bottom:14px;
+                  border-bottom:2px solid ${document.body.classList.contains('dark') ? '#2A2C30' : '#EAEBED'}">
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;
+                      color:#1D9E75;text-transform:uppercase;margin-bottom:3px">
+            ERA-EXHIBITION · SIERA Dashboard
+          </div>
+          <div style="font-size:16px;font-weight:800;
+                      color:${document.body.classList.contains('dark') ? '#F2F3F5' : '#0C0D0E'}">
+            AI Analysis Report
+          </div>
+          <div style="font-size:12px;color:#9EA1A8;margin-top:2px">
+            iBox Roadshow — Bintaro Jaya Xchange · 27 Apr – 3 Mei 2026
+          </div>
+        </div>
+        <div style="text-align:right;font-size:11px;color:#9EA1A8">
+          ${new Date().toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'})}
+        </div>
+      </div>`;
+
+    const addPanel = (id, accentColor) => {
+      const el = document.getElementById(id)?.querySelector('.ai-result-content');
+      if (!el) return;
+      const clone = el.cloneNode(true);
+      const wrap = document.createElement('div');
+      wrap.style.cssText = [
+        'background:' + (document.body.classList.contains('dark') ? '#1C1E21' : '#FFFFFF'),
+        'border:1.5px solid ' + (document.body.classList.contains('dark') ? '#2A2C30' : '#EAEBED'),
+        'border-radius:12px',
+        'padding:20px 22px',
+        'margin-bottom:16px',
+        'border-left:4px solid ' + accentColor,
+      ].join(';');
+      wrap.appendChild(clone);
+      wrapper.appendChild(wrap);
+    };
+
+    addPanel('claude-result',   '#1D9E75');
+    addPanel('deepseek-result', '#4B6BF5');
+
+    document.body.appendChild(wrapper);
+
+    const canvas = await html2canvas(wrapper, {
       scale: 2,
       useCORS: true,
-      backgroundColor: document.body.classList.contains('dark') ? '#141618' : '#F7F8F9',
+      backgroundColor: null,
       logging: false,
-      windowWidth: activePanel.scrollWidth,
-      windowHeight: activePanel.scrollHeight,
     });
 
-    // Add watermark
-    const ctx = canvas.getContext('2d');
-    ctx.save();
-    ctx.globalAlpha = 0.18;
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillStyle = '#1D9E75';
-    ctx.textAlign = 'right';
-    ctx.fillText('ERA-EXHIBITION · SIERA Dashboard', canvas.width - 20, canvas.height - 16);
-    ctx.restore();
+    document.body.removeChild(wrapper);
 
-    const dateStr = new Date().toISOString().slice(0, 10);
-    const tabName = sessionStorage.getItem('era-tab') || 'overview';
-    const filename = `ERA-EXHIBITION_${tabName}_${dateStr}.png`;
-
+    const dateStr  = new Date().toISOString().slice(0, 10);
+    const filename = `ERA-EXHIBITION_AI-Analysis_${dateStr}.png`;
     const a = document.createElement('a');
     a.href = canvas.toDataURL('image/png');
     a.download = filename;
     a.click();
 
-    showToast('Screenshot disimpan: ' + filename + ' ✓', 'success');
+    showToast('Screenshot AI Analysis disimpan ✓', 'success');
   } catch(err) {
     showToast('Screenshot gagal: ' + err.message, 'error');
   } finally {
