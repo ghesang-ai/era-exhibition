@@ -87,6 +87,56 @@
         <div class="day-cell today"><div class="day-name">Min</div><div class="day-val">3/5</div></div>
       </div>
 
+      <!-- ── TARGET ACHIEVEMENT BANNER ── -->
+      <div class="card card-pad mb-16" style="border:1.5px solid var(--siera-teal);background:linear-gradient(135deg,var(--bg-card) 0%,var(--siera-teal-light) 100%)">
+
+        <!-- Top row: title + big % -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px">
+          <div>
+            <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-3);font-weight:600;margin-bottom:4px">
+              🎯 Target Exhibition — Management Erajaya Digital
+            </div>
+            <div style="font-size:11px;color:var(--text-3);margin-bottom:6px">Revenue target 7 hari · Rp 879 jt/hari rata-rata</div>
+            <div style="font-size:26px;font-weight:800;color:var(--text);letter-spacing:-0.5px">Rp 6.156.700.000</div>
+          </div>
+          <div style="text-align:right;min-width:110px">
+            <div style="font-size:10.5px;color:var(--text-3);margin-bottom:2px;text-transform:uppercase;letter-spacing:0.4px">Achievement</div>
+            <div id="banner-ach-pct" style="font-size:38px;font-weight:900;line-height:1;color:var(--amber-txt)">—%</div>
+            <span id="banner-ach-badge" class="metric-badge mb-amber" style="font-size:10px;margin-top:6px;display:inline-block">Kalkulasi...</span>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div style="background:var(--bg-muted);border-radius:8px;height:12px;overflow:hidden;margin-bottom:14px;position:relative">
+          <div id="banner-ach-bar" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#1D9E75,#378ADD);transition:width 1s cubic-bezier(.4,0,.2,1)"></div>
+          <!-- 100% marker -->
+          <div style="position:absolute;right:0;top:-16px;font-size:9.5px;color:var(--text-3)">100%</div>
+        </div>
+
+        <!-- 4-cell stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center">
+          <div style="background:var(--bg-muted);border-radius:8px;padding:10px 6px">
+            <div style="font-size:9.5px;color:var(--text-3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px">Revenue Aktual</div>
+            <div id="banner-revenue" style="font-size:14px;font-weight:700;color:var(--green-txt)">—</div>
+          </div>
+          <div style="background:var(--bg-muted);border-radius:8px;padding:10px 6px">
+            <div style="font-size:9.5px;color:var(--text-3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px">Gap ke Target</div>
+            <div id="banner-gap" style="font-size:14px;font-weight:700;color:var(--red-txt)">—</div>
+          </div>
+          <div style="background:var(--bg-muted);border-radius:8px;padding:10px 6px">
+            <div style="font-size:9.5px;color:var(--text-3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px">Avg / Hari (Aktual)</div>
+            <div id="banner-runrate" style="font-size:14px;font-weight:700;color:var(--text)">—</div>
+          </div>
+          <div style="background:var(--bg-muted);border-radius:8px;padding:10px 6px">
+            <div style="font-size:9.5px;color:var(--text-3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px">Target / Hari</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text-2)">Rp 879 jt</div>
+          </div>
+        </div>
+
+        <!-- Gap analysis note -->
+        <div id="banner-analysis" style="margin-top:12px;padding:10px 12px;background:var(--bg-muted);border-radius:8px;font-size:12px;color:var(--text-2);line-height:1.6"></div>
+      </div>
+
       <!-- Event Cards -->
       <div id="event-cards-container" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px"></div>
 
@@ -431,8 +481,8 @@
               <div class="check-item">
                 <div class="check-icon ci-warn">!</div>
                 <div class="check-body">
-                  <div class="check-text">Target Revenue: Rp 1,2 Miliar</div>
-                  <div class="check-sub">Achieved: Rp 1,43 M (117%)</div>
+                  <div class="check-text">Target Revenue: Rp 6.156.700.000</div>
+                  <div class="check-sub">Achievement: <span id="planning-ach">—</span> · <span style="color:var(--text-3)">Rp 879 jt/hari</span></div>
                 </div>
               </div>
             </div>
@@ -642,8 +692,8 @@
             </div>
 
             <div class="divider"></div>
-            <div class="section-label mb-8">Running Total (6 hari)</div>
-            <div class="grid-2" style="gap:8px">
+            <div class="section-label mb-8">Running Total (kumulatif event)</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
               <div class="online-item">
                 <div class="online-lbl">Walk-in</div>
                 <div class="online-val" id="total-walkin">—</div>
@@ -657,8 +707,26 @@
                 <div class="online-val" id="total-revenue">Rp 2,06 M</div>
               </div>
               <div class="online-item">
+                <div class="online-lbl">Conv Rate</div>
+                <div class="online-val" id="total-conv">—</div>
+              </div>
+              <div class="online-item">
                 <div class="online-lbl">Achievement</div>
-                <div class="online-val" id="total-conv">33,4%</div>
+                <div class="online-val" id="total-ach" style="color:var(--amber-txt)">—</div>
+              </div>
+              <div class="online-item">
+                <div class="online-lbl">Gap ke Target</div>
+                <div class="online-val" id="total-gap" style="font-size:12px;color:var(--red-txt)">—</div>
+              </div>
+            </div>
+            <!-- Mini progress bar target vs aktual -->
+            <div style="margin-top:10px">
+              <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-3);margin-bottom:4px">
+                <span>Progress vs Target Rp 6,157 M</span>
+                <span id="total-ach-inline">—%</span>
+              </div>
+              <div style="background:var(--bg-muted);border-radius:6px;height:8px;overflow:hidden">
+                <div id="total-ach-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#1D9E75,#378ADD);border-radius:6px;transition:width 0.8s cubic-bezier(.4,0,.2,1)"></div>
               </div>
             </div>
           </div>

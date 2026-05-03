@@ -320,20 +320,98 @@ function updateRunningTotals() {
   const tw = allVals.reduce((s,e) => s+(e.walkin||0), 0);
   const tt = allVals.reduce((s,e) => s+(e.trx||0),    0);
   const tr = allVals.reduce((s,e) => s+(e.revenue||0), 0);
+
   // Conv rate hanya dari hari yang ada data walk-in (agar tidak salah hitung)
   const convDays = allVals.filter(e => (e.walkin||0) > 0 && (e.trx||0) > 0);
   const twC = convDays.reduce((s,e) => s+(e.walkin||0), 0);
   const ttC = convDays.reduce((s,e) => s+(e.trx||0),    0);
   const tc  = twC > 0 ? ((ttC/twC)*100).toFixed(1) : '—';
-  const totalTarget = 6156700000;
-  const ach  = ((tr/totalTarget)*100).toFixed(1);
 
-  const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
-  set('total-walkin',  tw > 0 ? tw.toLocaleString() : '—');
-  set('total-trx',     tt.toLocaleString());
-  set('total-revenue', fmtRp(tr));
-  set('total-conv',    tc !== '—' ? tc+'%' : '—');
-  set('total-ach',     ach+'%');
+  const TOTAL_TARGET = 6156700000;
+  const DAILY_TARGET = TOTAL_TARGET / 7;          // Rp 879,528,571/hari
+  const EVENT_DAYS   = 7;
+
+  const achPct     = +((tr / TOTAL_TARGET) * 100).toFixed(1);
+  const gap        = Math.max(TOTAL_TARGET - tr, 0);
+  const daysRan    = allVals.length;
+  const avgPerDay  = daysRan > 0 ? tr / daysRan : 0;
+
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  const setStyle = (id, prop, v) => { const el = document.getElementById(id); if (el) el.style[prop] = v; };
+
+  // ── Daily Input Running Total ──────────────────────────
+  set('total-walkin',   tw > 0 ? tw.toLocaleString() : '—');
+  set('total-trx',      tt.toLocaleString());
+  set('total-revenue',  fmtRp(tr));
+  set('total-conv',     tc !== '—' ? tc + '%' : '—');
+  set('total-ach',      achPct + '%');
+  set('total-gap',      gap > 0 ? '−' + fmtRp(gap) : '✓ Tercapai!');
+  set('total-ach-inline', achPct + '%');
+
+  // Mini progress bar in Daily Input
+  const miniBar = document.getElementById('total-ach-bar');
+  if (miniBar) miniBar.style.width = Math.min(achPct, 100) + '%';
+
+  // Achievement color
+  const achColor = achPct >= 100 ? 'var(--green-txt)' : achPct >= 70 ? 'var(--amber-txt)' : 'var(--red-txt)';
+  setStyle('total-ach', 'color', achColor);
+  setStyle('total-gap', 'color', gap <= 0 ? 'var(--green-txt)' : 'var(--red-txt)');
+
+  // ── Overview Banner ────────────────────────────────────
+  set('banner-ach-pct',  achPct + '%');
+  set('banner-revenue',  fmtRp(tr));
+  set('banner-gap',      gap > 0 ? '−' + fmtRp(gap) : '✓ Tercapai!');
+  set('banner-runrate',  fmtRp(avgPerDay));
+
+  // Progress bar
+  const barEl = document.getElementById('banner-ach-bar');
+  if (barEl) barEl.style.width = Math.min(achPct, 100) + '%';
+
+  // Achievement % color
+  setStyle('banner-ach-pct', 'color', achColor);
+  setStyle('banner-gap', 'color', gap <= 0 ? 'var(--green-txt)' : 'var(--red-txt)');
+
+  // Badge
+  const badgeEl = document.getElementById('banner-ach-badge');
+  if (badgeEl) {
+    if (achPct >= 100) {
+      badgeEl.textContent = '✓ Target Tercapai!';
+      badgeEl.className   = 'metric-badge mb-green';
+    } else if (achPct >= 70) {
+      badgeEl.textContent = achPct + '% — Mendekati target';
+      badgeEl.className   = 'metric-badge mb-amber';
+    } else if (achPct >= 50) {
+      badgeEl.textContent = achPct + '% — Perlu akselerasi';
+      badgeEl.className   = 'metric-badge mb-amber';
+    } else {
+      badgeEl.textContent = achPct + '% — Di bawah target';
+      badgeEl.className   = 'metric-badge mb-red';
+    }
+  }
+
+  // Gap analysis text
+  const analysisEl = document.getElementById('banner-analysis');
+  if (analysisEl) {
+    const avgVsTarget = ((avgPerDay / DAILY_TARGET) * 100).toFixed(0);
+    const gapFmt      = fmtRp(gap);
+    const neededExtra = gap > 0
+      ? `Gap sebesar <strong>${gapFmt}</strong> — perlu avg <strong>${fmtRp(DAILY_TARGET)}/hari</strong> untuk mencapai target (aktual: ${fmtRp(avgPerDay)}/hari = <strong>${avgVsTarget}%</strong> dari target harian).`
+      : `🎉 Target tercapai! Revenue melampaui Rp 6,157 M.`;
+    const advice = achPct < 50
+      ? ` <span style="color:var(--red-txt)">⚠️ Signifikan di bawah target. Perlu evaluasi strategi untuk event berikutnya.</span>`
+      : achPct < 80
+      ? ` <span style="color:var(--amber-txt)">→ Pertimbangkan target yang lebih realistis untuk next event, atau tambah hari & activasi.</span>`
+      : ` <span style="color:var(--green-txt)">→ Performa solid. Sedikit peningkatan kunci untuk capai target penuh.</span>`;
+    analysisEl.innerHTML = neededExtra + advice;
+  }
+
+  // Planning tab achievement label
+  const planningAch = document.getElementById('planning-ach');
+  if (planningAch) {
+    planningAch.textContent = achPct + '%';
+    planningAch.style.color = achColor;
+    planningAch.style.fontWeight = '700';
+  }
 }
 
 /* ════════════════════════════════════
