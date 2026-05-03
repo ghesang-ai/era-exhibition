@@ -893,7 +893,7 @@ function refreshAPIKeyStatus() {
   if (el) el.innerHTML = '🔒 <span style="color:var(--green-txt)">Claude ✓</span> · <span style="color:var(--green-txt)">DeepSeek ✓</span> — secured via Netlify';
 }
 
-const CLAUDE_MODELS   = { haiku:'claude-3-haiku-20240307', sonnet:'claude-3-5-sonnet-20241022', auto:'claude-3-5-sonnet-20241022' };
+const CLAUDE_MODELS   = { haiku:'claude-haiku-3-5', sonnet:'claude-sonnet-4-5', auto:'claude-sonnet-4-5' };
 const DEEPSEEK_MODELS = { v3:'deepseek-chat', r1:'deepseek-reasoner', auto:'deepseek-chat' };
 
 const ERA_SYSTEM_PROMPT = [
