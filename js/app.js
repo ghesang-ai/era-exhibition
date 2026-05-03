@@ -283,9 +283,9 @@ function refreshDailyTable() {
     tr.dataset.key   = key;
     tr.innerHTML = `
       <td>${e.date.slice(5)} · ${e.brand}</td>
-      <td>${(e.walkin||0).toLocaleString()}</td>
+      <td>${e.walkin > 0 ? e.walkin.toLocaleString() : '—'}</td>
       <td>${(e.trx||0).toLocaleString()}</td>
-      <td>${e.conv||0}%</td>
+      <td>${e.walkin > 0 && e.trx > 0 ? ((e.trx/e.walkin)*100).toFixed(1)+'%' : '—'}</td>
       <td>${fmtRp(e.revenue)}</td>
       <td><span class="metric-badge ${e.vmdScore>=85?'mb-green':'mb-amber'}" style="font-size:10px">${e.vmdScore}</span></td>
       <td style="white-space:nowrap;padding:4px 8px">
@@ -294,24 +294,46 @@ function refreshDailyTable() {
         <button onclick="deleteEntry('${key}')"
           class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px;color:var(--red-txt)">✕</button>
       </td>`;
-    // Highlight if currently editing
     if (_editingKey === key) tr.classList.add('editing');
     tbody.insertBefore(tr, tbody.firstChild);
   });
+
+  // Sembunyikan static row "hari ini" jika data hari itu sudah tersimpan
+  const today     = new Date().toISOString().slice(0, 10);
+  const todayRow  = tbody.querySelector('tr.row-today');
+  if (todayRow) {
+    const hasTodayData = Object.values(loadDailyData()).some(e => e.date === today);
+    todayRow.style.display = hasTodayData ? 'none' : '';
+  }
 }
 
 function updateRunningTotals() {
-  const vals = Object.values(loadDailyData());
-  if (!vals.length) return;
-  const tw = vals.reduce((s,e) => s+(e.walkin||0),0);
-  const tt = vals.reduce((s,e) => s+(e.trx||0),0);
-  const tr = vals.reduce((s,e) => s+(e.revenue||0),0);
-  const tc = tw > 0 ? ((tt/tw)*100).toFixed(1) : 0;
+  // Gabungkan STATIC_DAILY (hari 1-6) + saved entries (hari 7+)
+  const saved      = Object.values(loadDailyData());
+  const savedDates = new Set(saved.map(e => e.date));
+  const allVals    = [
+    ...STATIC_DAILY.filter(d => !savedDates.has(d.date)),
+    ...saved,
+  ];
+  if (!allVals.length) return;
+
+  const tw = allVals.reduce((s,e) => s+(e.walkin||0), 0);
+  const tt = allVals.reduce((s,e) => s+(e.trx||0),    0);
+  const tr = allVals.reduce((s,e) => s+(e.revenue||0), 0);
+  // Conv rate hanya dari hari yang ada data walk-in (agar tidak salah hitung)
+  const convDays = allVals.filter(e => (e.walkin||0) > 0 && (e.trx||0) > 0);
+  const twC = convDays.reduce((s,e) => s+(e.walkin||0), 0);
+  const ttC = convDays.reduce((s,e) => s+(e.trx||0),    0);
+  const tc  = twC > 0 ? ((ttC/twC)*100).toFixed(1) : '—';
+  const totalTarget = 6156700000;
+  const ach  = ((tr/totalTarget)*100).toFixed(1);
+
   const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
-  set('total-walkin',  tw.toLocaleString());
+  set('total-walkin',  tw > 0 ? tw.toLocaleString() : '—');
   set('total-trx',     tt.toLocaleString());
   set('total-revenue', fmtRp(tr));
-  set('total-conv',    tc+'%');
+  set('total-conv',    tc !== '—' ? tc+'%' : '—');
+  set('total-ach',     ach+'%');
 }
 
 /* ════════════════════════════════════
