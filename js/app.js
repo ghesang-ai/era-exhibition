@@ -456,6 +456,69 @@ function printReport() {
   setTimeout(() => window.print(), 220);
 }
 
+/* ── Generate PDF via browser print dialog ── */
+function generatePDF() {
+  const loader = document.getElementById('doc-pdf-loader');
+  if (loader) loader.style.display = 'flex';
+
+  // Switch to Final Report tab first, then print
+  switchTab('report');
+  setTimeout(() => {
+    if (loader) loader.style.display = 'none';
+    window.print();
+    showToast('Print dialog dibuka — pilih "Save as PDF" ✓', 'success');
+  }, 400);
+}
+
+/* ── Capture Screenshot (PNG) via html2canvas ── */
+async function captureScreenshot() {
+  if (typeof html2canvas === 'undefined') {
+    showToast('html2canvas belum dimuat — coba refresh halaman', 'error');
+    return;
+  }
+
+  const loader = document.getElementById('doc-ss-loader');
+  if (loader) loader.style.display = 'flex';
+
+  try {
+    // Capture the active tab panel
+    const activePanel = document.querySelector('.tab-panel.active') || document.querySelector('.app');
+    const canvas = await html2canvas(activePanel, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: document.body.classList.contains('dark') ? '#141618' : '#F7F8F9',
+      logging: false,
+      windowWidth: activePanel.scrollWidth,
+      windowHeight: activePanel.scrollHeight,
+    });
+
+    // Add watermark
+    const ctx = canvas.getContext('2d');
+    ctx.save();
+    ctx.globalAlpha = 0.18;
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillStyle = '#1D9E75';
+    ctx.textAlign = 'right';
+    ctx.fillText('ERA-EXHIBITION · SIERA Dashboard', canvas.width - 20, canvas.height - 16);
+    ctx.restore();
+
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const tabName = sessionStorage.getItem('era-tab') || 'overview';
+    const filename = `ERA-EXHIBITION_${tabName}_${dateStr}.png`;
+
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = filename;
+    a.click();
+
+    showToast('Screenshot disimpan: ' + filename + ' ✓', 'success');
+  } catch(err) {
+    showToast('Screenshot gagal: ' + err.message, 'error');
+  } finally {
+    if (loader) loader.style.display = 'none';
+  }
+}
+
 /* ════════════════════════════════════
    BUDGET — EDITABLE + LIVE ROI
    ════════════════════════════════════ */
