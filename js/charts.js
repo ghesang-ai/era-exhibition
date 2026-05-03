@@ -538,96 +538,113 @@ document.addEventListener('mousemove', e => {
 /* ══════════════════════════════════════════
    Init all charts
    ══════════════════════════════════════════ */
+/* ── Real data from ERA_EXHIBITION_Sales_Input_2.xlsx ── */
 window.CHART_LABELS_7D  = ['27/4', '28/4', '29/4', '30/4', '1/5', '2/5', '3/5'];
-window.CHART_WALKIN_7D  = [368, 412, 445, 390, 510, 722, null];
-window.CHART_REVENUE_7D = [165, 198, 231, 178, 268, 390, null]; // in juta
-window.CHART_CONV_7D    = [15.8, 17.5, 18.9, 16.7, 19.2, 20.4, null];
+
+// Revenue harian (juta Rp) — source: INPUT DAILY Grand Total Value
+window.CHART_REVENUE_7D = [387.8, 338.5, 153.2, 314.0, 357.2, 505.7, null];
+
+// Total units terjual per hari — source: INPUT DAILY Grand Total Qty
+window.CHART_UNITS_7D   = [55, 51, 25, 39, 72, 86, null];
+
+// Device units per hari — source: Device Total Qty
+window.CHART_DEVICE_7D  = [36, 24, 10, 13, 19, 43, null];
+
+// VAS units per hari — source: VAS Total Qty
+window.CHART_VAS_7D     = [19, 27, 15, 26, 53, 43, null];
+
+// Daily achievement % vs daily target (6,156.7 jt / 7 = 879.5 jt/hari)
+window.CHART_ACHIEV_7D  = [44.1, 38.5, 17.4, 35.7, 40.6, 57.5, null];
+
+// VMD Score (manual — tidak ada di Excel, gunakan estimasi lapangan)
 window.CHART_VMD_7D     = [90, 88, 91, 82, 89, 85, null];
 
 function initCharts() {
   const labels6 = window.CHART_LABELS_7D.slice(0, 6);
-  const walkin6 = window.CHART_WALKIN_7D.filter(v => v !== null);
   const rev6    = window.CHART_REVENUE_7D.filter(v => v !== null);
-  const conv6   = window.CHART_CONV_7D.filter(v => v !== null);
+  const units6  = window.CHART_UNITS_7D.filter(v => v !== null);
+  const device6 = window.CHART_DEVICE_7D.filter(v => v !== null);
+  const vas6    = window.CHART_VAS_7D.filter(v => v !== null);
+  const achiev6 = window.CHART_ACHIEV_7D.filter(v => v !== null);
   const vmd6    = window.CHART_VMD_7D.filter(v => v !== null);
 
-  // Overview: dual-line trend
+  // Overview: dual-line — Revenue harian & Units terjual
   renderLineChart('chart-trend', {
     height: 180,
     labels: labels6,
     series: [
       {
-        label:  'Walk-in',
-        values: walkin6,
+        label:  'Revenue (jt Rp)',
+        values: rev6,
         color:  SIERA_COLORS.teal,
-        format: v => v.toLocaleString(),
+        format: v => `Rp ${v} jt`,
       },
       {
-        label:  'Revenue (jt)',
-        values: rev6,
+        label:  'Units Terjual',
+        values: units6,
         color:  SIERA_COLORS.blue,
-        format: v => `Rp ${v} jt`,
+        format: v => v + ' unit',
       },
     ],
     targetLines: [
-      { value: 400,  label: 'Target 400', color: SIERA_COLORS.amber },
+      { value: 879.5, label: 'Target/hari 879 jt', color: SIERA_COLORS.amber },
     ],
   });
 
-  // Overview: conversion rate line
+  // Overview: Daily Achievement % vs daily target
   renderLineChart('chart-conv', {
     height: 120,
     labels: labels6,
     series: [
       {
-        label:  'Conv. Rate (%)',
-        values: conv6,
+        label:  'Achievement (%)',
+        values: achiev6,
         color:  SIERA_COLORS.violet,
         format: v => v + '%',
       },
     ],
     targetLines: [
-      { value: 15, label: 'Target 15%', color: SIERA_COLORS.red },
+      { value: 100, label: 'Target 100%', color: SIERA_COLORS.red },
     ],
   });
 
-  // Daily tab: bar chart
+  // Daily tab: Device vs VAS units per hari
   renderBarChart('chart-daily-bar', {
     height: 160,
     labels: labels6,
     series: [
       {
-        label:  'Walk-in',
-        values: walkin6,
+        label:  'Device',
+        values: device6,
         color:  SIERA_COLORS.teal,
       },
       {
-        label:  'Transaksi',
-        values: [58, 72, 84, 65, 98, 147],
+        label:  'VAS',
+        values: vas6,
         color:  SIERA_COLORS.blue,
       },
     ],
   });
 
-  // Budget donut
+  // Budget donut — plan amounts (Rp juta)
+  // Venue & Booth 119.16 · SDM 6.5 · Media & Promosi 8.135
   renderDonut('chart-budget-donut', {
     size: 140,
     stroke: 22,
-    centerLabel: '93%',
-    centerSub: 'terserap',
+    centerLabel: 'Plan',
+    centerSub: 'Rp 133,8 jt',
     segments: [
-      { value: 25,   color: SIERA_COLORS.teal   },  // Booth
-      { value: 11.7, color: SIERA_COLORS.blue   },  // VMD
-      { value: 14.3, color: SIERA_COLORS.violet },  // Media
-      { value: 9,    color: SIERA_COLORS.amber  },  // KOL
-      { value: 14.2, color: SIERA_COLORS.red    },  // SPV
+      { value: 85.0,  color: SIERA_COLORS.teal   },  // Konstruksi Booth
+      { value: 34.16, color: SIERA_COLORS.blue   },  // Sewa Space + Deposit
+      { value: 8.135, color: SIERA_COLORS.violet },  // Media, KOL, OOH
+      { value: 6.5,   color: SIERA_COLORS.amber  },  // SDM / Personil
     ],
   });
 
-  // Sparklines on metric cards
-  renderSparkline('spark-walkin',  walkin6, SIERA_COLORS.teal);
+  // Sparklines
+  renderSparkline('spark-walkin',  units6,  SIERA_COLORS.teal);   // units sold
   renderSparkline('spark-revenue', rev6,    SIERA_COLORS.blue);
-  renderSparkline('spark-conv',    conv6,   SIERA_COLORS.violet);
+  renderSparkline('spark-conv',    achiev6, SIERA_COLORS.violet);  // achievement%
   renderSparkline('spark-vmd',     vmd6,    SIERA_COLORS.amber);
 }
 
