@@ -1373,3 +1373,4 @@ body.dark #deepseek-gen-card .ai-pill.active { background: #131630; }
   0%, 80%, 100% { transform: scale(.65); opacity: .35; }
   40%           { transform: scale(1.15); opacity: 1;   }
 }
+.hidden { display: none !important; }

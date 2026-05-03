@@ -882,58 +882,283 @@ const AI_RESPONSES = {
   },
 };
 
-function generateAnalysis(provider) {
+/* ── AI API Config (Option B: browser direct — keys stored in localStorage) ── */
+// Keys never stored in source code. User sets via UI → saved to localStorage.
+const LS_CLAUDE_KEY   = 'era-claude-key';
+const LS_DEEPSEEK_KEY = 'era-deepseek-key';
+function getClaudeKey()   { try { return localStorage.getItem(LS_CLAUDE_KEY)   || ''; } catch(e) { return ''; } }
+function getDeepSeekKey() { try { return localStorage.getItem(LS_DEEPSEEK_KEY) || ''; } catch(e) { return ''; } }
+
+function saveAPIKeys() {
+  const cEl = document.getElementById('cfg-claude-key');
+  const dEl = document.getElementById('cfg-deepseek-key');
+  const c   = cEl?.value?.trim();
+  const d   = dEl?.value?.trim();
+  let saved = 0;
+  if (c) { localStorage.setItem(LS_CLAUDE_KEY,   c); if (cEl) cEl.value = ''; saved++; }
+  if (d) { localStorage.setItem(LS_DEEPSEEK_KEY, d); if (dEl) dEl.value = ''; saved++; }
+  if (saved > 0) {
+    showToast('API Keys tersimpan di browser ✓', 'success');
+    document.getElementById('api-config-panel')?.classList.add('hidden');
+    refreshAPIKeyStatus();
+  } else {
+    showToast('Isi minimal satu API key', 'error');
+  }
+}
+function clearAPIKeys() {
+  if (!confirm('Hapus semua API key yang tersimpan?')) return;
+  localStorage.removeItem(LS_CLAUDE_KEY);
+  localStorage.removeItem(LS_DEEPSEEK_KEY);
+  showToast('API keys dihapus', 'info');
+  refreshAPIKeyStatus();
+}
+function toggleAPIConfig() {
+  const panel = document.getElementById('api-config-panel');
+  if (panel) panel.classList.toggle('hidden');
+}
+function refreshAPIKeyStatus() {
+  const hasC = !!getClaudeKey();
+  const hasD = !!getDeepSeekKey();
+  const el   = document.getElementById('api-key-status');
+  if (!el) return;
+  el.innerHTML = [
+    hasC ? '<span style="color:var(--green-txt)">✓ Claude</span>' : '<span style="color:var(--amber-txt)">✗ Claude</span>',
+    hasD ? '<span style="color:var(--green-txt)">✓ DeepSeek</span>' : '<span style="color:var(--amber-txt)">✗ DeepSeek</span>',
+  ].join(' · ');
+}
+
+const CLAUDE_MODELS   = { haiku:'claude-3-5-haiku-20241022', sonnet:'claude-3-5-sonnet-20241022', auto:'claude-3-5-sonnet-20241022' };
+const DEEPSEEK_MODELS = { v3:'deepseek-chat', r1:'deepseek-reasoner', auto:'deepseek-chat' };
+
+const ERA_SYSTEM_PROMPT = [
+  'Kamu adalah AI analyst untuk ERA-EXHIBITION SIERA Dashboard milik Erajaya Digital Region 5.',
+  'Berikan analisis tajam, terstruktur, dan actionable dalam Bahasa Indonesia.',
+  '',
+  '=== DATA EVENT ===',
+  'Event: iBox Roadshow — Bintaro Jaya Xchange, 27 Apr – 3 Mei 2026',
+  'Event Manager: Ghesang Pratano | Region 5 · Erajaya Digital',
+  '',
+  '=== PERFORMA 6 HARI (DATA AKTUAL EXCEL) ===',
+  'Total Units: 328 | Revenue: Rp 2.056.443.150 | Target: Rp 6.156.700.000 | Achievement: 33,4%',
+  'Avg Revenue/Unit: Rp 6.269.033',
+  '',
+  'Tren Harian:',
+  '- Sen 27/4: 55 trx | Rp 387.835.000 | VMD 90',
+  '- Sel 28/4: 51 trx | Rp 338.503.000 | VMD 88',
+  '- Rab 29/4: 25 trx | Rp 153.176.200 | VMD 91 (TERENDAH)',
+  '- Kam 30/4: 39 trx | Rp 313.995.000 | VMD 82',
+  '- Jum  1/5: 72 trx | Rp 357.231.000 | VMD 89',
+  '- Sab  2/5: 86 trx | Rp 505.702.950 | VMD 85 (TERTINGGI)',
+  '- Min  3/5: Belum diinput',
+  '',
+  'Breakdown Produk:',
+  '- iPhone: 95 unit | Rp 1.653.405.000 (80,4% revenue share)',
+  '- iPad: 45 unit | Rp 196.055.000 (9,5%)',
+  '- Macbook: 5 unit | Rp 80.595.000 (3,9%)',
+  '- Accessories: 165 unit | Rp 86.887.150 (4,2%)',
+  '- Apple Watch: 4 unit | Rp 20.546.000',
+  '- Airpods: 1 unit | Rp 4.099.000',
+  '- SIM Indosat+XL: 9 unit | Rp 9.000.000',
+  '',
+  '=== BUDGET TRACKER ===',
+  'Konstruksi Booth Plan: Rp 85.000.000 | Sewa Space Plan: Rp 34.160.000',
+  'Media & KOL+OOH Plan: Rp 8.135.000 | SDM Plan: Rp 6.500.000',
+  'Total Plan: Rp 133.795.000 | Cost Actual: Belum diisi',
+  'ROI vs Plan: +1.437% (Revenue Rp 2,056M / Budget Rp 133,8jt)',
+  '',
+  '=== CATATAN ===',
+  'Walk-in data TIDAK tersedia. Hari ke-7 (3 Mei) belum diinput.',
+  'Format: gunakan ## heading, - bullet list, **bold** untuk angka penting. Maks 500 kata.',
+].join('\n');
+
+const PILL_PROMPTS = {
+  descriptive:  'Descriptive Analysis — ringkasan lengkap semua metrik aktual dengan tren harian',
+  diagnostic:   'Diagnostic Analysis — identifikasi root cause gap achievement 33,4% dari target',
+  predictive:   'Predictive Analysis — proyeksi hari ke-7 dan rekomendasi next exhibition',
+  prescriptive: 'Prescriptive Analysis — action items prioritas untuk event manager',
+  sales:        'Sales Analysis — breakdown per kategori produk, ASP, efisiensi, dan peluang upsell',
+  layanan:      'Customer Experience Analysis — touchpoint, service quality, dan NPS improvement',
+  operation:    'Operational Analysis — VMD score trend, ops harian, SOP improvement',
+  people:       'People & Team Analysis — produktivitas tim dan rekomendasi pengembangan',
+  financial:    'Financial Analysis — P&L, ROI actual vs plan, budget efficiency',
+};
+
+async function generateAnalysis(provider) {
   const resultEl = document.getElementById(`${provider}-result`);
   if (!resultEl) return;
 
-  // Get active pills
   const activePills = [...document.querySelectorAll(`#${provider}-types .ai-pill.active`)]
     .map(p => p.textContent.trim().toLowerCase().replace(/[^a-z]/g,''));
-
   const customPrompt = document.getElementById(`${provider}-custom-prompt`)?.value?.trim();
-  const modelBtn = document.querySelector(`#${provider}-model-row .ai-model-btn.active`);
-  const model    = modelBtn?.dataset.model || (provider === 'claude' ? 'sonnet' : 'v3');
-  const modelLabels = {
-    haiku:'Claude Haiku', sonnet:'Claude Sonnet', auto:'Claude Auto',
-    v3:'DeepSeek V3 Chat', r1:'DeepSeek R1 Reasoner',
-  };
-  const modelLabel = modelLabels[model] || model;
+  const modelBtn     = document.querySelector(`#${provider}-model-row .ai-model-btn.active`);
+  const model        = modelBtn?.dataset.model || (provider === 'claude' ? 'sonnet' : 'v3');
+  const dotsClass    = provider === 'deepseek' ? 'ai-loading-dots ds' : 'ai-loading-dots';
 
-  // Dots color class
-  const dotsClass = provider === 'deepseek' ? 'ai-loading-dots ds' : 'ai-loading-dots';
-
-  // Show loading
   resultEl.innerHTML = `
     <div class="ai-result-loading">
       <div class="${dotsClass}"><span></span><span></span><span></span></div>
       <div>${provider === 'claude' ? '✦ Claude' : '◈ DeepSeek'} sedang menganalisis data ERA-EXHIBITION...</div>
     </div>`;
 
-  // Pick content — first active pill wins, fallback to descriptive
-  const key = activePills.find(k => AI_RESPONSES[k]) || 'descriptive';
-  const { title, body } = AI_RESPONSES[key];
+  if (provider === 'claude') {
+    await _claudeAPICall(resultEl, activePills, customPrompt, model);
+  } else {
+    await _deepseekAPICall(resultEl, activePills, customPrompt, model);
+  }
+}
 
-  const delay = provider === 'deepseek' ? 2400 : 1700;
-  setTimeout(() => {
-    const badgeClass = provider === 'claude' ? 'mb-green' : 'mb-blue';
-    resultEl.innerHTML = `
-      <div class="ai-result-content">
-        <div style="display:flex;justify-content:space-between;align-items:center;
-                    margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
-          <div style="font-size:12.5px;font-weight:700;color:var(--text)">${title}</div>
-          <span class="metric-badge ${badgeClass}" style="font-size:10px;flex-shrink:0">${modelLabel}</span>
-        </div>
-        ${customPrompt ? `<div style="font-size:11.5px;color:var(--text-3);margin-bottom:10px;
-          padding:8px 10px;background:var(--bg);border-radius:6px;font-style:italic">
-          ✎ "${customPrompt}"</div>` : ''}
-        ${body}
-        <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--border);
-                    font-size:10.5px;color:var(--text-3);display:flex;justify-content:space-between">
-          <span>Generated ${new Date().toLocaleTimeString('id-ID')}</span>
-          <span>ERA-EXHIBITION · iBox BJX 2026 · 6 hari data</span>
-        </div>
-      </div>`;
-  }, delay);
+async function _claudeAPICall(resultEl, pills, customPrompt, model) {
+  const apiKey = getClaudeKey();
+  if (!apiKey) {
+    _renderAIError(resultEl, 'API key Claude belum dikonfigurasi. Klik ⚙ API Settings di atas.');
+    document.getElementById('api-config-panel')?.classList.remove('hidden');
+    return;
+  }
+  const modelId   = CLAUDE_MODELS[model] || CLAUDE_MODELS.sonnet;
+  const pillsText = pills.length > 0
+    ? pills.map(p => PILL_PROMPTS[p] || p).join(' + ')
+    : 'Descriptive Analysis — ringkasan umum performa event';
+  const userMsg   = 'Lakukan analisis berikut untuk data ERA-EXHIBITION:\n\n' + pillsText
+    + (customPrompt ? '\n\nFokus dan instruksi tambahan: ' + customPrompt : '');
+
+  try {
+    const resp = await _fetchWithProxy('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key':                             apiKey,
+        'anthropic-version':                     '2023-06-01',
+        'content-type':                          'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: modelId, max_tokens: 1024,
+        system: ERA_SYSTEM_PROMPT,
+        messages: [{ role:'user', content: userMsg }],
+      }),
+    });
+    if (!resp.ok) {
+      const e = await resp.json().catch(() => ({}));
+      throw new Error(e.error?.message || 'HTTP ' + resp.status);
+    }
+    const data    = await resp.json();
+    const rawText = data.content?.[0]?.text || '(Tidak ada respons)';
+    const mLabel  = modelId.includes('haiku') ? 'Claude Haiku' : 'Claude Sonnet';
+    const tokInfo = data.usage?.output_tokens ? ' · ' + data.usage.output_tokens + ' tok' : '';
+    _renderAIResult(resultEl, rawText, mLabel, 'mb-green', customPrompt, tokInfo);
+  } catch(err) {
+    _renderAIError(resultEl, err.message);
+  }
+}
+
+async function _deepseekAPICall(resultEl, pills, customPrompt, model) {
+  const apiKey = getDeepSeekKey();
+  if (!apiKey) {
+    _renderAIError(resultEl, 'API key DeepSeek belum dikonfigurasi. Klik ⚙ API Settings di atas.');
+    document.getElementById('api-config-panel')?.classList.remove('hidden');
+    return;
+  }
+  const modelId   = DEEPSEEK_MODELS[model] || DEEPSEEK_MODELS.v3;
+  const pillsText = pills.length > 0
+    ? pills.map(p => PILL_PROMPTS[p] || p).join(' + ')
+    : 'Descriptive Analysis — ringkasan umum performa event';
+  const userMsg   = 'Lakukan analisis berikut untuk data ERA-EXHIBITION:\n\n' + pillsText
+    + (customPrompt ? '\n\nFokus dan instruksi tambahan: ' + customPrompt : '');
+
+  try {
+    const resp = await _fetchWithProxy('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + apiKey,
+        'Content-Type':  'application/json',
+      },
+      body: JSON.stringify({
+        model: modelId, max_tokens: 1024,
+        messages: [
+          { role:'system', content: ERA_SYSTEM_PROMPT },
+          { role:'user',   content: userMsg },
+        ],
+      }),
+    });
+    if (!resp.ok) {
+      const e = await resp.json().catch(() => ({}));
+      throw new Error(e.error?.message || 'HTTP ' + resp.status);
+    }
+    const data    = await resp.json();
+    const rawText = data.choices?.[0]?.message?.content || '(Tidak ada respons)';
+    const mLabel  = modelId === 'deepseek-reasoner' ? 'DeepSeek R1' : 'DeepSeek V3';
+    const tokInfo = data.usage?.completion_tokens ? ' · ' + data.usage.completion_tokens + ' tok' : '';
+    _renderAIResult(resultEl, rawText, mLabel, 'mb-blue', customPrompt, tokInfo);
+  } catch(err) {
+    _renderAIError(resultEl, err.message);
+  }
+}
+
+async function _fetchWithProxy(url, options) {
+  try {
+    const r = await fetch(url, options);
+    return r;
+  } catch(networkErr) {
+    // CORS blocked — retry via proxy
+    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+    return await fetch(proxyUrl, options);
+  }
+}
+
+function _renderAIResult(resultEl, rawText, mLabel, badgeCls, customPrompt, tokInfo) {
+  const htmlBody = _mdToHtml(rawText);
+  resultEl.innerHTML = `
+    <div class="ai-result-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;
+                  margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+        <div style="font-size:12.5px;font-weight:700;color:var(--text)">✦ AI Analysis</div>
+        <span class="metric-badge ${badgeCls}" style="font-size:10px;flex-shrink:0">${mLabel}</span>
+      </div>
+      ${customPrompt ? '<div style="font-size:11.5px;color:var(--text-3);margin-bottom:10px;'
+        + 'padding:8px 10px;background:var(--bg);border-radius:6px;font-style:italic">'
+        + '✎ "' + customPrompt + '"</div>' : ''}
+      <div style="font-size:13px;line-height:1.65;color:var(--text)">${htmlBody}</div>
+      <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--border);
+                  font-size:10.5px;color:var(--text-3);display:flex;justify-content:space-between">
+        <span>Generated ${new Date().toLocaleTimeString('id-ID')}</span>
+        <span>${mLabel}${tokInfo} · ERA-EXHIBITION</span>
+      </div>
+    </div>`;
+}
+
+function _renderAIError(resultEl, msg) {
+  resultEl.innerHTML = '<div style="padding:16px">'
+    + '<div style="color:var(--red-txt);font-size:13px;font-weight:600">⚠️ Error memanggil AI API</div>'
+    + '<div style="font-size:12px;color:var(--text-2);margin-top:6px">' + msg + '</div>'
+    + '<div style="font-size:11.5px;color:var(--text-3);margin-top:8px">'
+    + 'Periksa koneksi internet dan validitas API key.</div></div>';
+  showToast('AI API error: ' + msg, 'error');
+}
+
+function _mdToHtml(md) {
+  const lines = md.split('\n');
+  let html = '', inList = false;
+  for (const rawLine of lines) {
+    const safe = rawLine
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*([^*]+?)\*/g,'<em>$1</em>');
+    if (/^#{1,3} /.test(rawLine)) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += '<h4 style="margin:12px 0 5px;font-size:13px;font-weight:700">'
+            + safe.replace(/^#+\s/,'') + '</h4>';
+    } else if (/^(?:[-*•]|\d+\.)\s/.test(rawLine)) {
+      if (!inList) { html += '<ul style="margin:4px 0 10px;padding-left:18px">'; inList = true; }
+      html += '<li style="margin:3px 0;line-height:1.6">'
+            + safe.replace(/^(?:[-*•]|\d+\.)\s/,'') + '</li>';
+    } else if (safe.trim() === '') {
+      if (inList) { html += '</ul>'; inList = false; }
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += '<p style="margin:4px 0;line-height:1.65">' + safe + '</p>';
+    }
+  }
+  if (inList) html += '</ul>';
+  return html;
 }
 
 /* ════════════════════════════════════
@@ -991,6 +1216,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Alerts
   refreshAlerts();
+
+  // AI key status
+  refreshAPIKeyStatus();
 
   // Modal: close on overlay click
   document.querySelectorAll('.modal-overlay').forEach(ov => {
