@@ -882,49 +882,15 @@ const AI_RESPONSES = {
   },
 };
 
-/* ── AI API Config (Option B: browser direct — keys stored in localStorage) ── */
-// Keys never stored in source code. User sets via UI → saved to localStorage.
-const LS_CLAUDE_KEY   = 'era-claude-key';
-const LS_DEEPSEEK_KEY = 'era-deepseek-key';
-function getClaudeKey()   { try { return localStorage.getItem(LS_CLAUDE_KEY)   || ''; } catch(e) { return ''; } }
-function getDeepSeekKey() { try { return localStorage.getItem(LS_DEEPSEEK_KEY) || ''; } catch(e) { return ''; } }
+/* ── AI API Config — via Netlify Functions (keys aman di server) ── */
+// API keys disimpan di Netlify Environment Variables, BUKAN di browser/source.
+// Dashboard memanggil /.netlify/functions/claude dan /deepseek (same-origin, no CORS).
+const NETLIFY_CLAUDE_FN   = '/.netlify/functions/claude';
+const NETLIFY_DEEPSEEK_FN = '/.netlify/functions/deepseek';
 
-function saveAPIKeys() {
-  const cEl = document.getElementById('cfg-claude-key');
-  const dEl = document.getElementById('cfg-deepseek-key');
-  const c   = cEl?.value?.trim();
-  const d   = dEl?.value?.trim();
-  let saved = 0;
-  if (c) { localStorage.setItem(LS_CLAUDE_KEY,   c); if (cEl) cEl.value = ''; saved++; }
-  if (d) { localStorage.setItem(LS_DEEPSEEK_KEY, d); if (dEl) dEl.value = ''; saved++; }
-  if (saved > 0) {
-    showToast('API Keys tersimpan di browser ✓', 'success');
-    document.getElementById('api-config-panel')?.classList.add('hidden');
-    refreshAPIKeyStatus();
-  } else {
-    showToast('Isi minimal satu API key', 'error');
-  }
-}
-function clearAPIKeys() {
-  if (!confirm('Hapus semua API key yang tersimpan?')) return;
-  localStorage.removeItem(LS_CLAUDE_KEY);
-  localStorage.removeItem(LS_DEEPSEEK_KEY);
-  showToast('API keys dihapus', 'info');
-  refreshAPIKeyStatus();
-}
-function toggleAPIConfig() {
-  const panel = document.getElementById('api-config-panel');
-  if (panel) panel.classList.toggle('hidden');
-}
 function refreshAPIKeyStatus() {
-  const hasC = !!getClaudeKey();
-  const hasD = !!getDeepSeekKey();
-  const el   = document.getElementById('api-key-status');
-  if (!el) return;
-  el.innerHTML = [
-    hasC ? '<span style="color:var(--green-txt)">✓ Claude</span>' : '<span style="color:var(--amber-txt)">✗ Claude</span>',
-    hasD ? '<span style="color:var(--green-txt)">✓ DeepSeek</span>' : '<span style="color:var(--amber-txt)">✗ DeepSeek</span>',
-  ].join(' · ');
+  const el = document.getElementById('api-key-status');
+  if (el) el.innerHTML = '🔒 <span style="color:var(--green-txt)">Claude ✓</span> · <span style="color:var(--green-txt)">DeepSeek ✓</span> — secured via Netlify';
 }
 
 const CLAUDE_MODELS   = { haiku:'claude-3-5-haiku-20241022', sonnet:'claude-3-5-sonnet-20241022', auto:'claude-3-5-sonnet-20241022' };
@@ -1008,12 +974,6 @@ async function generateAnalysis(provider) {
 }
 
 async function _claudeAPICall(resultEl, pills, customPrompt, model) {
-  const apiKey = getClaudeKey();
-  if (!apiKey) {
-    _renderAIError(resultEl, 'API key Claude belum dikonfigurasi. Klik ⚙ API Settings di atas.');
-    document.getElementById('api-config-panel')?.classList.remove('hidden');
-    return;
-  }
   const modelId   = CLAUDE_MODELS[model] || CLAUDE_MODELS.sonnet;
   const pillsText = pills.length > 0
     ? pills.map(p => PILL_PROMPTS[p] || p).join(' + ')
@@ -1022,25 +982,17 @@ async function _claudeAPICall(resultEl, pills, customPrompt, model) {
     + (customPrompt ? '\n\nFokus dan instruksi tambahan: ' + customPrompt : '');
 
   try {
-    const resp = await _fetchWithProxy('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch(NETLIFY_CLAUDE_FN, {
       method: 'POST',
-      headers: {
-        'x-api-key':                             apiKey,
-        'anthropic-version':                     '2023-06-01',
-        'content-type':                          'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: modelId, max_tokens: 1024,
         system: ERA_SYSTEM_PROMPT,
         messages: [{ role:'user', content: userMsg }],
       }),
     });
-    if (!resp.ok) {
-      const e = await resp.json().catch(() => ({}));
-      throw new Error(e.error?.message || 'HTTP ' + resp.status);
-    }
-    const data    = await resp.json();
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || 'HTTP ' + resp.status);
     const rawText = data.content?.[0]?.text || '(Tidak ada respons)';
     const mLabel  = modelId.includes('haiku') ? 'Claude Haiku' : 'Claude Sonnet';
     const tokInfo = data.usage?.output_tokens ? ' · ' + data.usage.output_tokens + ' tok' : '';
@@ -1051,12 +1003,6 @@ async function _claudeAPICall(resultEl, pills, customPrompt, model) {
 }
 
 async function _deepseekAPICall(resultEl, pills, customPrompt, model) {
-  const apiKey = getDeepSeekKey();
-  if (!apiKey) {
-    _renderAIError(resultEl, 'API key DeepSeek belum dikonfigurasi. Klik ⚙ API Settings di atas.');
-    document.getElementById('api-config-panel')?.classList.remove('hidden');
-    return;
-  }
   const modelId   = DEEPSEEK_MODELS[model] || DEEPSEEK_MODELS.v3;
   const pillsText = pills.length > 0
     ? pills.map(p => PILL_PROMPTS[p] || p).join(' + ')
@@ -1065,12 +1011,9 @@ async function _deepseekAPICall(resultEl, pills, customPrompt, model) {
     + (customPrompt ? '\n\nFokus dan instruksi tambahan: ' + customPrompt : '');
 
   try {
-    const resp = await _fetchWithProxy('https://api.deepseek.com/v1/chat/completions', {
+    const resp = await fetch(NETLIFY_DEEPSEEK_FN, {
       method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + apiKey,
-        'Content-Type':  'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: modelId, max_tokens: 1024,
         messages: [
@@ -1079,11 +1022,8 @@ async function _deepseekAPICall(resultEl, pills, customPrompt, model) {
         ],
       }),
     });
-    if (!resp.ok) {
-      const e = await resp.json().catch(() => ({}));
-      throw new Error(e.error?.message || 'HTTP ' + resp.status);
-    }
-    const data    = await resp.json();
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || 'HTTP ' + resp.status);
     const rawText = data.choices?.[0]?.message?.content || '(Tidak ada respons)';
     const mLabel  = modelId === 'deepseek-reasoner' ? 'DeepSeek R1' : 'DeepSeek V3';
     const tokInfo = data.usage?.completion_tokens ? ' · ' + data.usage.completion_tokens + ' tok' : '';
@@ -1093,16 +1033,6 @@ async function _deepseekAPICall(resultEl, pills, customPrompt, model) {
   }
 }
 
-async function _fetchWithProxy(url, options) {
-  try {
-    const r = await fetch(url, options);
-    return r;
-  } catch(networkErr) {
-    // CORS blocked — retry via proxy
-    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
-    return await fetch(proxyUrl, options);
-  }
-}
 
 function _renderAIResult(resultEl, rawText, mLabel, badgeCls, customPrompt, tokInfo) {
   const htmlBody = _mdToHtml(rawText);
