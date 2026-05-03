@@ -718,7 +718,7 @@
             <div class="card-title-left">
               <div class="card-icon">◎</div> Rincian Anggaran
             </div>
-            <span style="font-size:11px;color:var(--text-3)">Kolom Aktual bisa diedit</span>
+            <span style="font-size:11px;color:var(--text-3)">Isi kolom Aktual → klik Simpan ✓</span>
           </div>
 
           <!-- Header -->
@@ -816,6 +816,17 @@
               <div class="budget-pct" data-key="ops" style="font-size:12px;font-weight:600;text-align:right;color:var(--text-3)">—</div>
             </div>
           </div>
+
+          <!-- Save button -->
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px">
+            <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="saveBudgetAndNotify()">
+              Simpan Aktual ✓
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="resetBudgetActuals()" style="color:var(--text-3);font-size:12px">
+              Reset
+            </button>
+          </div>
+          <div id="budget-save-status" style="font-size:11.5px;color:var(--text-3);text-align:center;min-height:16px"></div>
         </div>
 
         <!-- Right: Donut + ROI -->

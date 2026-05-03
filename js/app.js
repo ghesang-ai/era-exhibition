@@ -406,6 +406,45 @@ function recomputeBudget() {
   set('budget-roi',         (roi>0?'+':'')+roi+'%');
 }
 
+function saveBudgetAndNotify() {
+  recomputeBudget();
+
+  // Visual feedback on status line
+  const status = document.getElementById('budget-save-status');
+  const now    = new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
+  if (status) {
+    status.textContent = `✓ Tersimpan — ${now}`;
+    status.style.color = 'var(--green-txt)';
+    setTimeout(() => { status.textContent = ''; }, 4000);
+  }
+  showToast('Budget aktual tersimpan ✓', 'success');
+
+  // Update budget notes card to reflect filled state
+  const notesCard = document.querySelector('.card-icon + *');
+  refreshBudgetNotes();
+}
+
+function refreshBudgetNotes() {
+  const actuals = loadBudgetActuals();
+  if (!actuals) return;
+  const total  = Object.values(actuals).reduce((s,v)=>s+v,0);
+  const pct    = total > 0 ? Math.round((total/133.795)*100) : 0;
+  const badgeEl = document.querySelector('#panel-budget .badge-plan, #panel-budget .badge-warn');
+  if (badgeEl && total > 0) {
+    badgeEl.textContent = `${pct}% aktual terisi`;
+    badgeEl.className   = pct >= 100 ? 'badge badge-live' : 'badge badge-plan';
+  }
+}
+
+function resetBudgetActuals() {
+  if (!confirm('Reset semua nilai aktual ke 0?')) return;
+  document.querySelectorAll('.budget-actual-input').forEach(inp => { inp.value = 0; });
+  recomputeBudget();
+  const status = document.getElementById('budget-save-status');
+  if (status) { status.textContent = 'Reset ke 0 ✓'; status.style.color = 'var(--text-3)'; }
+  showToast('Budget aktual direset', 'info');
+}
+
 /* ════════════════════════════════════
    ALERT SYSTEM
    ════════════════════════════════════ */
@@ -936,6 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.budget-actual-input')
     .forEach(inp => inp.addEventListener('input', recomputeBudget));
   initBudget();
+  refreshBudgetNotes();
 
   // Brand tabs
   document.querySelectorAll('.brand-tab')
