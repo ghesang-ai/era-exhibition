@@ -1211,6 +1211,83 @@ function _mdToHtml(md) {
 }
 
 /* ════════════════════════════════════
+   DAY STRIP TOOLTIP
+   ════════════════════════════════════ */
+function initDayTooltips() {
+  // Create singleton tooltip element
+  const tip = document.createElement('div');
+  tip.id = 'day-tooltip';
+  tip.innerHTML = '<div class="tip-arrow"></div>';
+  document.body.appendChild(tip);
+
+  const cells = document.querySelectorAll('.day-cell[data-trx]');
+
+  cells.forEach(cell => {
+    cell.addEventListener('mouseenter', e => {
+      const d  = cell.dataset;
+      const trx     = d.trx    || '—';
+      const revenue = d.revenue || '—';
+      const vmd     = d.vmd    || '—';
+      const walkin  = d.walkin && d.walkin !== '0' ? d.walkin : null;
+
+      // Badge colour based on revenue rank
+      const rev = parseFloat((d.revenue||'0').replace(/[^\d.]/g,'')) *
+                  (d.revenue?.includes(' M') ? 1000 : 1);
+      const revenueColor = rev >= 800 ? '#1D9E75'
+                         : rev >= 400 ? '#EF9F27'
+                         : '#D85A30';
+
+      tip.innerHTML = `
+        <div class="tip-head">${d.label || ''}</div>
+        <div class="tip-row"><span>🛍 Units terjual</span><strong>${trx} unit</strong></div>
+        <div class="tip-row"><span>💰 Revenue</span><strong style="color:${revenueColor}">${revenue}</strong></div>
+        <div class="tip-row"><span>📐 VMD Score</span><strong>${vmd}/100</strong></div>
+        ${walkin ? `<div class="tip-row"><span>👥 Walk-in</span><strong>${walkin}</strong></div>` : ''}
+        <div class="tip-arrow"></div>`;
+      tip.classList.add('visible');
+      _positionTip(e, tip, cell);
+    });
+
+    cell.addEventListener('mousemove', e => _positionTip(e, tip, cell));
+
+    cell.addEventListener('mouseleave', () => {
+      tip.classList.remove('visible');
+    });
+  });
+
+  // Update Day 7 tooltip dynamically from localStorage if user has entered data
+  const day7Cell = document.getElementById('day-cell-day7');
+  if (day7Cell) {
+    const today = '2026-05-03';
+    const saved = Object.values(loadDailyData()).find(e => e.date === today);
+    if (saved) {
+      if (saved.trx)     day7Cell.dataset.trx     = saved.trx;
+      if (saved.revenue) day7Cell.dataset.revenue  = fmtRp(saved.revenue);
+      if (saved.vmdScore)day7Cell.dataset.vmd       = saved.vmdScore;
+      if (saved.walkin && saved.walkin > 0)
+                         day7Cell.dataset.walkin   = saved.walkin;
+    }
+  }
+}
+
+function _positionTip(e, tip, cell) {
+  const rect = cell.getBoundingClientRect();
+  const tw   = tip.offsetWidth  || 195;
+  const th   = tip.offsetHeight || 110;
+  const vw   = window.innerWidth;
+
+  let left = rect.left + rect.width / 2 - tw / 2;
+  let top  = rect.top - th - 12;
+
+  if (left < 8)            left = 8;
+  if (left + tw > vw - 8) left = vw - tw - 8;
+  if (top < 8)             top  = rect.bottom + 10; // flip below
+
+  tip.style.left = left + 'px';
+  tip.style.top  = top  + 'px';
+}
+
+/* ════════════════════════════════════
    RESIZE
    ════════════════════════════════════ */
 let _resizeTimer;
@@ -1265,6 +1342,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Alerts
   refreshAlerts();
+
+  // Day strip tooltips
+  initDayTooltips();
 
   // AI key status
   refreshAPIKeyStatus();

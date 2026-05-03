@@ -418,9 +418,10 @@ button { cursor: pointer; }
   font-size: 12px;
   font-weight: 600;
   color: var(--text);
-  width: 54px;
+  min-width: 140px;
   text-align: right;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* ── Funnel ── */
@@ -534,6 +535,58 @@ tbody tr.row-today td { font-weight: 600; background: var(--siera-teal-light); }
 .day-val  { font-size: 13px; font-weight: 700; color: var(--text); }
 .day-cell.today .day-val { color: var(--siera-teal-dark); }
 .day-cell.today .day-name { color: var(--siera-teal); }
+.day-cell[data-trx] { cursor: pointer; }
+.day-cell[data-trx]:hover {
+  border-color: var(--siera-teal);
+  background: var(--siera-teal-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Day Tooltip ── */
+#day-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background: #0C0D0E;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.65;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+  min-width: 175px;
+}
+#day-tooltip.visible { opacity: 1; }
+#day-tooltip .tip-head {
+  font-weight: 700;
+  font-size: 12.5px;
+  margin-bottom: 7px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
+}
+#day-tooltip .tip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 2px;
+}
+#day-tooltip .tip-row strong { color: #fff; font-weight: 600; }
+#day-tooltip .tip-arrow {
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #0C0D0E;
+}
 
 /* ── Event Selector ── */
 .event-selector {
@@ -885,6 +938,16 @@ body.dark .day-cell.past {
 body.dark .day-cell.today {
   background: #0D2B20;
   border-color: var(--siera-teal);
+}
+body.dark .day-cell[data-trx]:hover {
+  background: #0D2B20;
+}
+body.dark #day-tooltip {
+  background: #1E2230;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+}
+body.dark #day-tooltip .tip-arrow {
+  border-top-color: #1E2230;
 }
 body.dark table thead th {
   background: #0F1117;
