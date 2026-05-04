@@ -472,6 +472,8 @@ function generatePDF() {
 
   const loader = document.getElementById('doc-pdf-loader');
   if (loader) loader.style.display = 'flex';
+  // Selalu clear loader setelah 4 detik (fallback)
+  setTimeout(() => { if (loader) loader.style.display = 'none'; }, 4000);
 
   const isDark   = document.body.classList.contains('dark');
   const dateStr  = new Date().toLocaleString('id-ID', { dateStyle:'full', timeStyle:'short' });
@@ -573,16 +575,23 @@ function generatePDF() {
 </body>
 </html>`;
 
-  const win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
-  win.onload = () => {
-    setTimeout(() => {
-      win.print();
-      if (loader) loader.style.display = 'none';
-      showToast('PDF report dibuka — pilih "Save as PDF" ✓', 'success');
-    }, 350);
-  };
+  // Blob URL — lebih reliable di Safari (tidak kena popup blocker)
+  try {
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), {
+      href: url, target: '_blank',
+    });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    if (loader) loader.style.display = 'none';
+    showToast('Report dibuka di tab baru — tekan ⌘P lalu "Save as PDF" ✓', 'success');
+  } catch(err) {
+    if (loader) loader.style.display = 'none';
+    showToast('Gagal buka PDF: ' + err.message, 'error');
+  }
 }
 
 /* ── Capture Screenshot hasil AI Analysis (PNG) ── */
