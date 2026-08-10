@@ -892,13 +892,15 @@ function refreshAlerts() {
 const DEFAULT_EVENTS = [
   { id:'ibox-bjx-2026', name:'iBox Roadshow — Bintaro Jaya Xchange',
     dates:'27 Apr – 3 Mei 2026', brand:'iBox', status:'live',
-    walkin:2847, revenue:'Rp 1,43 M', conv:'18,4%', roi:'+75%' },
+    walkin:2847, revenue:'Rp 1,43 M', conv:'18,4%', roi:'+75%',
+    badgeLabel:'LIVE · Hari ke-7/7' },
   { id:'erafone-citraraya-2026', name:'Erafone Roadshow — Citra Raya',
     dates:'s.d. 9 Agu 2026', brand:'Erafone', status:'live',
     walkin:'1.806', kpi1Label:'Unit Terjual',
     revenue:'Rp 6,28 M',
     conv:'224%', kpi3Label:'Achievement',
-    roi:'Rp 2,80 M', kpi4Label:'vs Target' },
+    roi:'Rp 2,80 M', kpi4Label:'vs Target',
+    badgeLabel:'LIVE · Snapshot Report' },
 ];
 
 function loadEvents() {
@@ -1002,18 +1004,45 @@ function refreshEventCards() {
     </div>`;
 }
 
-function switchEventTo(id) {
-  localStorage.setItem(LS_CUR_EVT, id);
+// Events whose Overview content is a dedicated static card (id -> card element id)
+// rather than the iBox-style daily-tracking dashboard (day strip, banner, charts…).
+const EVENT_REPORT_CARDS = {
+  'erafone-citraraya-2026': 'erafone-report-card',
+};
+
+// Applies an event's view to the Overview tab (title, subtitle, badge, which
+// content block is visible) without touching localStorage or showing a toast —
+// used both by switchEventTo() and on initial page load.
+function applyEventView(id) {
   const events = loadEvents();
-  const ev     = events.find(e => e.id === id);
+  const ev     = events.find(e => e.id === id) || events[0];
   if (!ev) return;
-  // Update header title
+
   const title = document.querySelector('#panel-overview .page-title');
   if (title) title.innerHTML = `<div class="glow-dot pulse"></div>${ev.name}`;
   const sub = document.querySelector('#panel-overview .page-subtitle');
   if (sub) sub.textContent = `${ev.dates} · ${ev.brand}`;
+  const badge = document.getElementById('overview-status-badge');
+  if (badge) badge.textContent = ev.badgeLabel
+    || (ev.status === 'live' ? `LIVE · ${ev.dates || ''}` : ev.status === 'done' ? 'SELESAI' : 'PLANNING');
+
+  const reportCardId = EVENT_REPORT_CARDS[ev.id];
+  document.querySelectorAll('.ibox-only-section')
+    .forEach(el => { el.style.display = reportCardId ? 'none' : ''; });
+
+  // Show only the report card matching the selected event; hide the rest.
+  Object.values(EVENT_REPORT_CARDS).forEach(cardId => {
+    const card = document.getElementById(cardId);
+    if (card) card.style.display = cardId === reportCardId ? '' : 'none';
+  });
+}
+
+function switchEventTo(id) {
+  localStorage.setItem(LS_CUR_EVT, id);
+  applyEventView(id);
   refreshEventSelector();
-  showToast(`Switched to: ${ev.name}`,'success');
+  const ev = loadEvents().find(e => e.id === id);
+  if (ev) showToast(`Switched to: ${ev.name}`,'success');
 }
 
 function refreshEventSelector() {
@@ -1590,6 +1619,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Event cards
   refreshEventCards();
+
+  // Apply the currently-selected event's view (title, badge, which content block shows)
+  applyEventView(localStorage.getItem(LS_CUR_EVT) || loadEvents()[0]?.id);
 
   // Alerts
   refreshAlerts();

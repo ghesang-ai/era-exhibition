@@ -66,7 +66,7 @@
           <div class="page-subtitle">27 Apr – 3 Mei 2026 · Region 5 · Erajaya Digital</div>
         </div>
         <div class="page-header-right">
-          <span class="badge badge-live badge-dot">LIVE · Hari ke-7/7</span>
+          <span class="badge badge-live badge-dot" id="overview-status-badge">LIVE · Hari ke-7/7</span>
           <div class="event-selector" style="margin:0;min-width:280px">
             <select id="event-selector-main">
               <option>iBox Roadshow — Bintaro Jaya Xchange (27 Apr – 3 Mei 2026)</option>
@@ -75,6 +75,9 @@
           </div>
         </div>
       </div>
+
+      <!-- iBox-specific Overview content — hidden when a non-iBox event is selected (see applyEventView in js/app.js) -->
+      <div class="ibox-only-section">
 
       <!-- Day Strip -->
       <div class="day-grid">
@@ -164,6 +167,9 @@
         <!-- Gap analysis note -->
         <div id="banner-analysis" style="margin-top:12px;padding:10px 12px;background:var(--bg-muted);border-radius:8px;font-size:12px;color:var(--text-2);line-height:1.6"></div>
       </div>
+
+      </div>
+      <!-- /overview-ibox-content (part 1: day strip + target banner) -->
 
       <!-- Event Cards -->
       <div id="event-cards-container" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px"></div>
@@ -261,6 +267,9 @@
           dipromosikan lebih agresif di roadshow selanjutnya.
         </div>
       </div>
+
+      <!-- iBox-specific Overview content, part 2 — hidden when a non-iBox event is selected -->
+      <div class="ibox-only-section">
 
       <!-- KPI Metrics with sparklines + animated counters -->
       <div class="section-label mb-8">Key Performance Indicators</div>
@@ -488,6 +497,9 @@
           </div>
         </div>
       </div>
+
+      </div>
+      <!-- /overview-ibox-content -->
     </div>
 
     <!-- ─────────────────────────────────
