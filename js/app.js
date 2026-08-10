@@ -893,11 +893,24 @@ const DEFAULT_EVENTS = [
   { id:'ibox-bjx-2026', name:'iBox Roadshow — Bintaro Jaya Xchange',
     dates:'27 Apr – 3 Mei 2026', brand:'iBox', status:'live',
     walkin:2847, revenue:'Rp 1,43 M', conv:'18,4%', roi:'+75%' },
+  { id:'erafone-citraraya-2026', name:'Erafone Roadshow — Citra Raya',
+    dates:'s.d. 9 Agu 2026', brand:'Erafone', status:'live',
+    walkin:'1.806', kpi1Label:'Unit Terjual',
+    revenue:'Rp 6,28 M',
+    conv:'224%', kpi3Label:'Achievement',
+    roi:'Rp 2,80 M', kpi4Label:'vs Target' },
 ];
 
 function loadEvents() {
-  try { return JSON.parse(localStorage.getItem(LS_EVENTS)||'null') || DEFAULT_EVENTS; }
-  catch(e) { return DEFAULT_EVENTS; }
+  // Merge saved events with DEFAULT_EVENTS so new default events (e.g. Erafone)
+  // still surface for users whose localStorage predates them.
+  let events;
+  try { events = JSON.parse(localStorage.getItem(LS_EVENTS)||'null'); } catch(e) { events = null; }
+  if (!events || !events.length) return DEFAULT_EVENTS;
+  DEFAULT_EVENTS.forEach(def => {
+    if (!events.some(e => e.id === def.id)) events.push(def);
+  });
+  return events;
 }
 function saveEvents(events) {
   try { localStorage.setItem(LS_EVENTS, JSON.stringify(events)); } catch(e) {}
@@ -966,19 +979,19 @@ function refreshEventCards() {
         <div class="event-card-kpis">
           <div class="event-kpi">
             <div class="event-kpi-val">${e.walkin||'—'}</div>
-            <div class="event-kpi-lbl">Walk-in</div>
+            <div class="event-kpi-lbl">${e.kpi1Label||'Walk-in'}</div>
           </div>
           <div class="event-kpi">
             <div class="event-kpi-val">${e.revenue||'—'}</div>
-            <div class="event-kpi-lbl">Revenue</div>
+            <div class="event-kpi-lbl">${e.kpi2Label||'Revenue'}</div>
           </div>
           <div class="event-kpi">
             <div class="event-kpi-val">${e.conv||'—'}</div>
-            <div class="event-kpi-lbl">Conv. Rate</div>
+            <div class="event-kpi-lbl">${e.kpi3Label||'Conv. Rate'}</div>
           </div>
           <div class="event-kpi">
             <div class="event-kpi-val" style="color:var(--green-txt)">${e.roi||'—'}</div>
-            <div class="event-kpi-lbl">ROI</div>
+            <div class="event-kpi-lbl">${e.kpi4Label||'ROI'}</div>
           </div>
         </div>
       </div>`;
